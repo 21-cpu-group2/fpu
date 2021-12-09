@@ -1,16 +1,15 @@
-`timescale 1ns / 100ps
+`timescale 1us / 100ns
 `default_nettype none
 module fdiv
     (input wire [31:0] op1,
     input wire [31:0] op2,
     output reg [31:0] result,
     input wire clk,
-    output reg ready,
-    output reg valid
+    input wire reset
     );
 
     wire [24:0] fra1;
-    wire [23:0] fra2;
+    wire [24:0] fra2;
     wire [7:0] exp1;
     wire [7:0] exp2;
     wire sig1;
@@ -18,20 +17,26 @@ module fdiv
 
 
     assign fra1 = (op1[30:23] == 8'b0) ? {2'b00, op1[22:0]} : {2'b01, op1[22:0]};
-    assign fra2 = (op2[30:23] == 8'b0) ? {1'b0, op2[22:0]} : {1'b1, op2[22:0]};
+    assign fra2 = (op2[30:23] == 8'b0) ? {2'b00, op2[22:0]} : {2'b01, op2[22:0]};
     assign exp1 = op1[30:23];
     assign exp2 = op2[30:23];
     assign sig1 = op1[31];
     assign sig2 = op2[31];
+
+    reg [8:0] exp1_reg;
+    reg [8:0] exp2_reg;
+    reg ans_sig_reg;
 
 //x / fra2 = ans ... amari
     wire [11:0] ans_high;
     wire [24:0] sub1 = fra1 - fra2;
     wire [24:0] x1 = (sub1[24] == 1'b1) ? (fra1 << 1) : (sub1 << 1);
     assign ans_high[11] = (sub1[24] == 1'b1) ? 1'b0 : 1'b1;
+
     wire [24:0] sub2 = x1 - fra2;
     wire [24:0] x2 = (sub2[24] == 1'b1) ? (x1 << 1) : (sub2 << 1);
     assign ans_high[10] = (sub2[24] == 1'b1) ? 1'b0 : 1'b1;
+
     wire [24:0] sub3 = x2 - fra2;
     wire [24:0] x3 = (sub3[24] == 1'b1) ? (x2 << 1) : (sub3 << 1);
     assign ans_high[9] = (sub3[24] == 1'b1) ? 1'b0 : 1'b1;
@@ -66,12 +71,6 @@ module fdiv
     reg [11:0] ans_high_reg;
     reg [24:0] x_next;
     reg [23:0] fra2_next;
-
-    always @(posedge clk) begin
-        ans_high_reg <= ans_high;
-        x_next <= x12;
-        fra2_next <= fra2;
-    end
 
     wire [11:0] ans_low;
     wire [24:0] sub_next1 = x_next - fra2_next;
@@ -114,18 +113,43 @@ module fdiv
     // wire [24:0] sub_p = x_p-1 - fra2;
     // wire [24:0] x_p = (sub_p[24] == 1'b1) ? (x_p-1 << 1) : (sub_p << 1);
     // assign ans_high[12-p] = (sub3[24] == 1'b1) ? 1'b0 : 1'b1;
+
+    wire [8:0] for_ans_exp;
+    assign for_ans_exp = exp1_reg + 9'd127;
+    wire [8:0] ans_exp;
+    assign ans_exp = for_ans_exp - exp2_reg;
+    wire [8:0] ans_exp_minus1;
+    assign ans_exp_minus1 = ans_exp - 9'd1;
+
     always @(posedge clk) begin
-        if (ready) begin
-            ready <= 1'b0;
-        end
-        if (ans_high_reg[11] == 1'b1) begin
-            result <= {ans_high_reg, ans_low[11:1]};
-            ready <= 1'b1;
-            valid <= 1'b1;
+        if (~reset) begin
+            result <= 32'd0;
+            ans_high_reg <= 12'd0;
+            x_next <= 25'd0;
+            fra2_next <= 24'd0;
+            exp1_reg <= 9'd0;
+            exp2_reg <= 9'd0;
+            ans_sig_reg <= 1'b0;
         end else begin
-            result <= {ans_high_reg[10:0], ans_low};
-            ready <= 1'b1;
-            valid <= 1'b1;
+            ans_high_reg <= ans_high;
+            x_next <= x12;
+            fra2_next <= fra2;
+            exp1_reg <= {1'b0, exp1};
+            exp2_reg <= {1'b0, exp2};
+            ans_sig_reg <= sig1 ^ sig2;
+            if (ans_high_reg[11] == 1'b1) begin
+                if (ans_exp[8] == 1'b1) begin
+                    result <= 32'd0;
+                end else begin
+                    result <= {ans_sig_reg,ans_exp[7:0], ans_high_reg[10:0], ans_low};
+                end
+            end else begin
+                if (ans_exp_minus1[8] == 1'b1) begin
+                    result <= 32'd0;
+                end else begin
+                    result <= {ans_sig_reg,ans_exp_minus1[7:0], ans_high_reg[9:0], ans_low, 1'b0};//最終ビットは速さのため計算せず
+                end
+            end
         end
     end
 endmodule
