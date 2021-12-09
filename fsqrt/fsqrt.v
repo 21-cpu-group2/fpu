@@ -1,3 +1,4 @@
+`timescale 1us / 100ns
 `default_nettype none
 module fsqrt (
     input wire [31:0] op,
@@ -15,12 +16,25 @@ assign ram_grad = ram_read[12:0];
 
 reg [35:0] ram [1023:0];
 
-reg [7:0] exp2;
+wire [8:0] exp = {1'b0, op[30:23]};
+wire [8:0] exp_plus126 = exp + 9'd126;
+wire [8:0] exp_plus127 = exp + 9'd127;
+wire [8:0] for_exp2 = op[23] ? exp_plus127 : exp_plus126;
+
+reg [8:0] exp2;
 reg [13:0] res;
 
 reg [7:0] exp3;
 reg [26:0] grad_mul_res;
 reg [23:0] frac;
+
+wire [23:0] grad_mul_res_need;
+assign grad_mul_res_need = {1'b0, grad_mul_res[26:4]};
+wire [23:0] result_1;//[23]は必ず1になるはず：デバッグ用
+assign result_1 = frac + grad_mul_res_need;
+
+wire [23:0] result_plus1_1;
+assign result_plus1_1 = result_1 + 24'd1;
 
 always @(posedge clk) begin
     if (~reset) begin
@@ -1054,37 +1068,34 @@ always @(posedge clk) begin
 		ram[1021] <= 36'b011010011000001000001000101101010100;
 		ram[1022] <= 36'b011010011010111101011000101101010011;
 		ram[1023] <= 36'b011010011101110010100010101101010001;
-    end
-    ram_read <= ram[op[23:14]];
-    exp2 <= op[30:23] >> 1'b1;
-    res <= op[13:0];
+	end else begin
+		ram_read <= ram[op[23:14]];
+		exp2 <= (for_exp2 >> 1'b1);
+		if (op[23]) begin
+			res <= {1'b0, op[13:1]};
+		end else begin
+			res <= op[13:0];
+		end
+		
+
+		grad_mul_res <= ((ram_grad * res) >> 8);
+		exp3 <= exp2[7:0];
+		frac <= ram_main;
+
+		if (ready) begin
+			ready <= 1'b0;
+		end
+		if (grad_mul_res[3]) begin//精度が大丈夫そうなら消したほうが早いかも
+			result <= {1'b0, exp3, result_plus1_1[22:0]};
+			ready <= 1'b1;
+		end else begin
+			result <= {1'b0, exp3, result_1[22:0]};
+			ready <= 1'b1;
+		end
+	end 
 end
 
-always @(posedge clk) begin
-    grad_mul_res <= ram_grad * res;
-    exp3 <= exp2;
-    frac <= ram_main;
-end
 
-wire [23:0] grad_mul_res_need;
-assign grad_mul_res_need = {1'b0, grad_mul_res[26:4]};
-wire [23:0] result_1;//[23]は必ず1になるはず：デバッグ用
-assign result_1 = frac + grad_mul_res_need;
 
-wire [23:0] result_plus1_1;
-assign result_plus1_1 = result_1 + 24'd1;
-
-always @(posedge clk) begin
-    if (ready) begin
-        ready <= 1'b0;
-    end
-    if (grad_mul_res[3]) begin//精度が大丈夫そうなら消したほうが早いかも
-        result <= {1'b0, exp3, result_plus1_1[22:0]};
-        ready <= 1'b1;
-    end else begin
-        result <= {1'b0, exp3, result_1[22:0]};
-        ready <= 1'b1;
-    end
-end
 endmodule
 `default_nettype wire
