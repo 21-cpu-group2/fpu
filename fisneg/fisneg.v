@@ -1,26 +1,10 @@
-`timescale 1ns / 100ps
-`default_nettype none
-module fisneg
-    (input wire [31:0] op,
-    output reg result,
-    input wire reset,
-    input wire clk
-    );
+module fisneg (
+    input wire [31:0] op,
+    output wire result
+);
 
     wire iszero;
-    assign iszero = ~|op[30:23];//指数部が0ならすべてゼロ
-
-    always @(posedge clk) begin
-        if (~reset) begin
-            result <= 1'b0;
-        end else begin
-            if (iszero) begin
-                result <= 1'b0;
-            end else begin
-                result <= op[31];
-            end
-        end
-    end
-
+    assign notzero = |op[30:23];
+    assign result = notzero & op[31];
+    
 endmodule
-`default_nettype wire
