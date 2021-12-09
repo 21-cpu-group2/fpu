@@ -20,6 +20,8 @@ module test_ftoi();
     bit error_in_bit;
     int i;
     bit invalid;
+    real gosa;
+    shortreal fdivresultshortreal;
 
 
 
@@ -54,6 +56,7 @@ module test_ftoi();
             end
             invalid = 1'b0;
             #4;
+
             if (~(result == resultint)) begin
                 error_in_bit = 1'b1;
                 $display("result is not correct\n");
