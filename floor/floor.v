@@ -5,8 +5,7 @@ module floor (
     input wire [31:0] op,
     output reg [31:0] result,
     input wire clk,
-    input wire reset,
-    output reg ready
+    input wire reset
 );
 
 wire sig;
@@ -23,10 +22,15 @@ reg [24:0] new_fra_reg;
 reg [22:0] fra_desimal;//orをとるので整数部分は0埋め
 reg [24:0] for_add;
 
+
+wire [24:0] add_fra;
+assign add_fra = new_fra_reg + for_add;
+wire [7:0] exp_plus_1;
+assign exp_plus_1 = new_exp_reg + 8'd1;
+
 always @(posedge clk) begin
     if (~reset) begin
         result <= 32'd0;
-        ready <= 1'b0;
         new_sig_reg <= 1'b0;
         new_exp_reg <= 8'd0;
         new_fra_reg <= 25'd0;
@@ -169,27 +173,13 @@ always @(posedge clk) begin
                 end
             endcase
         end
-    end
-end
-
-wire [24:0] add_fra;
-assign add_fra = new_fra_reg + for_add;
-wire [7:0] exp_plus_1;
-assign exp_plus_1 = new_exp_reg + 8'd1;
-
-always @(posedge clk) begin
-    if (ready) begin
-        ready <= 1'b0;
-    end
-    if (~new_sig_reg | ~(|fra_desimal)) begin//正もしくは負だけど小数部分が0のときは切り捨て
-        result <= {new_sig_reg, new_exp_reg, new_fra_reg[22:0]};
-        ready <= 1'b1;
-    end else if (add_fra[25]) begin//負で（絶対値として）切り上げたらexpを変える必要がある場合
-        result <= {new_sig_reg, exp_plus_1, 23'd0};
-        ready <= 1'b1;
-    end else begin
-        result <= {new_sig_reg, new_exp_reg, add_fra[22:0]};
-        ready <= 1'b1;
+        if (~new_sig_reg | ~(|fra_desimal)) begin//正もしくは負だけど小数部分が0のときは切り捨て
+            result <= {new_sig_reg, new_exp_reg, new_fra_reg[22:0]};
+        end else if (add_fra[25]) begin//負で（絶対値として）切り上げたらexpを変える必要がある場合
+            result <= {new_sig_reg, exp_plus_1, 23'd0};
+        end else begin
+            result <= {new_sig_reg, new_exp_reg, add_fra[22:0]};
+        end
     end
 end
 
