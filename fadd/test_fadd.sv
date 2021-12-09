@@ -36,7 +36,7 @@ module test_fadd();
    assign op2 = op2logic;
    assign clk = clklogic;
    
-   fadd f(op1, op2, result, clk , ready, valid, reset);
+   fadd f(op1, op2, result, clk, ready, valid, reset);
 
 
    always begin

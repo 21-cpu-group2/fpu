@@ -130,48 +130,8 @@ reg exp_next;
 reg sig_next;
 reg [4:0] zero_count_reg;
 
-always @(posedge clk) begin
-    if (~reset) begin
-        result <= 32'd0;
-        ready <= 1'b0;
-        valid <= 1'b0;
-        op_big <= 28'd0;
-        op_small <= 28'd0;
-        exp_big <= 8'd0;
-        sig_big <= 1'b0;
-        sig_small <= 1'b0;
-        exp_next <= 1'b0;
-        sig_next <= 1'b0;
-        zero_count_reg <= 5'd0;
-    end
-end
-
-always @(posedge clk) begin
-    if (op1_is_abs_bigger) begin
-        op_big <= fra1;
-        op_small <= fra2_shifted;
-        exp_big <= exp1;
-        sig_big <= sig1;
-        sig_small <= sig2;
-    end else begin
-        op_big <= fra2;
-        op_small <= fra1_shifted;
-        exp_big <= exp2;
-        sig_big <= sig2;
-        sig_small <= sig1;
-    end
-end
-
 wire [7:0] for_exp_next;
 assign for_exp_next = {7'd0, marume_up};
-
-always @(posedge clk) begin
-    ans_reg <= ans;
-    ans_shift_reg <= ans_shift;
-    exp_next <= (exp_big + for_exp_next);
-    sig_next <= sig_big;
-    zero_count_reg <= zero_count;
-end
 
 wire [22:0] for_ZLC0_fra;
 assign for_ZLC0_fra = {22'd0, |ans_reg[3:0]};
@@ -210,50 +170,84 @@ assign for2_ZLC_lt3_exp = {7'd0, 1'b1};
 wire [7:0] ZLC_lt3_exp;
 assign ZLC_lt3_exp = exp_next - for_ZLC_lt3_exp + for2_ZLC_lt3_exp;
 
+
 always @(posedge clk) begin
-    if (ready) begin
+    if (~reset) begin
+        result <= 32'd0;
         ready <= 1'b0;
         valid <= 1'b0;
-    end
-    if (zero_count_reg == 5'd0) begin
-        result <= {sig_next, ZLC0_exp, ZLC0_fra};
-        ready <= 1'b1;
-        valid <= 1'b1;
-    end else if (zero_count_reg == 5'd1) begin
-        result <= {sig_next, ZLC1_exp, ZLC1_fra};
-        ready <= 1'b1;
-        valid <= 1'b1;
-    end else if (zero_count_reg == 5'd2) begin
-        if (ZLC2_exp < 0) begin
-            result <= {sig_next, 8'd0, ZLC2_fra};//ここのfraに意味はない
-            ready <= 1'b1;
-            valid <= 1'b0;
-        end else begin
-            result <= {sig_next, ZLC2_exp, ZLC2_fra};
-            ready <= 1'b1;
-            valid <= 1'b1;
-        end
-    end else if (zero_count_reg == 5'd3) begin
-        if (ZLC3_exp < 0) begin
-            result <= {sig_next, 8'd0, ZLC3_fra};
-            ready <= 1'b1;
-            valid <= 1'b0;
-        end else begin
-            result <= {sig_next, ZLC3_exp, ZLC3_fra};
-            ready <= 1'b1;
-            valid <= 1'b1;
-        end
+        op_big <= 28'd0;
+        op_small <= 28'd0;
+        exp_big <= 8'd0;
+        sig_big <= 1'b0;
+        sig_small <= 1'b0;
+        exp_next <= 1'b0;
+        sig_next <= 1'b0;
+        zero_count_reg <= 5'd0;
     end else begin
-        if (ZLC_lt3_exp < 0) begin
-            result <= {sig_next, 8'd0, ZLC3_fra};
-            ready <= 1'b1;
-            valid <= 1'b0;
+        if (op1_is_abs_bigger) begin
+            op_big <= fra1;
+            op_small <= fra2_shifted;
+            exp_big <= exp1;
+            sig_big <= sig1;
+            sig_small <= sig2;
         end else begin
-            result <= {sig_next, ZLC_lt3_exp, ZLC_lt3_fra};
+            op_big <= fra2;
+            op_small <= fra1_shifted;
+            exp_big <= exp2;
+            sig_big <= sig2;
+            sig_small <= sig1;
+        end
+        ans_reg <= ans;
+        ans_shift_reg <= ans_shift;
+        exp_next <= (exp_big + for_exp_next);
+        sig_next <= sig_big;
+        zero_count_reg <= zero_count;
+        if (ready) begin
+            ready <= 1'b0;
+            valid <= 1'b0;
+        end
+        if (zero_count_reg == 5'd0) begin
+            result <= {sig_next, ZLC0_exp, ZLC0_fra};
             ready <= 1'b1;
             valid <= 1'b1;
+        end else if (zero_count_reg == 5'd1) begin
+            result <= {sig_next, ZLC1_exp, ZLC1_fra};
+            ready <= 1'b1;
+            valid <= 1'b1;
+        end else if (zero_count_reg == 5'd2) begin
+            if (ZLC2_exp < 0) begin
+                result <= {sig_next, 8'd0, ZLC2_fra};//ここのfraに意味はない
+                ready <= 1'b1;
+                valid <= 1'b0;
+            end else begin
+                result <= {sig_next, ZLC2_exp, ZLC2_fra};
+                ready <= 1'b1;
+                valid <= 1'b1;
+            end
+        end else if (zero_count_reg == 5'd3) begin
+            if (ZLC3_exp < 0) begin
+                result <= {sig_next, 8'd0, ZLC3_fra};
+                ready <= 1'b1;
+                valid <= 1'b0;
+            end else begin
+                result <= {sig_next, ZLC3_exp, ZLC3_fra};
+                ready <= 1'b1;
+                valid <= 1'b1;
+            end
+        end else begin
+            if (ZLC_lt3_exp < 0) begin
+                result <= {sig_next, 8'd0, ZLC3_fra};
+                ready <= 1'b1;
+                valid <= 1'b0;
+            end else begin
+                result <= {sig_next, ZLC_lt3_exp, ZLC_lt3_fra};
+                ready <= 1'b1;
+                valid <= 1'b1;
+            end
         end
     end
 end
+
 endmodule
 `default_nettype wire
