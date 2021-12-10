@@ -1,18 +1,18 @@
 `timescale 1us / 100ns
 `default_nettype none
 
-module shift(
-    input wire [27:0] op,
-    input wire [7:0] shift,
-    output wire [27:0] result
-);
-wire [50:0] pre;
-assign pre = op >> shift;
-wire [27:0] shift_lt_26_result;
-assign shift_lt_26_result = {pre[50:24], |pre[23:0]};
-assign result = (shift > 8'd27) ? {27'd0, |op} : shift_lt_26_result;
+// module shift(
+//     input wire [27:0] op,
+//     input wire [7:0] shift,
+//     output wire [27:0] result
+// );
+// wire [50:0] pre;
+// assign pre = op >> shift;
+// wire [27:0] shift_lt_26_result;
+// assign shift_lt_26_result = {pre[50:24], |pre[23:0]};
+// assign result = (shift > 8'd27) ? {27'd0, |op} : shift_lt_26_result;
 
-endmodule
+// endmodule
 
 module ZLC(
     input wire [27:0] op,
@@ -105,10 +105,10 @@ wire [7:0] shift_2;
 assign shift_1 = exp2 - exp1;//if op2 is bigger
 assign shift_2 = exp1 - exp2;//if op1 is bigger
 
-wire [27:0] fra1_shifted;
-shift shift_mod_1(fra1, shift_1, fra1_shifted);
-wire [27:0] fra2_shifted;
-shift shift_mod_2(fra2, shift_2, fra2_shifted);
+// wire [27:0] fra1_shifted;
+// shift shift_mod_1(fra1, shift_1, fra1_shifed);
+// wire [27:0] fra2_shifted;
+// shift shift_mod_2(fra2, shift_2, fra2_shifted);
 
 reg [27:0] op_big;
 reg [27:0] op_small;
@@ -117,7 +117,7 @@ reg sig_big;
 reg sig_small;
 
 wire [27:0] ans;
-assign ans = (sig_big && sig_small) ? (op_big + op_small) : (op_big - op_small);
+assign ans = (sig_big ^ sig_small) ? (op_big - op_small) : (op_big + op_small);
 reg [27:0] ans_reg;
 wire [4:0] zero_count;
 wire [22:0] ans_shift;
@@ -126,9 +126,12 @@ ZLC ZLC1(ans, zero_count, ans_shift);
 wire marume_up;
 assign marume_up = (~ans[27] && (ans[26] || ans[1]) && &ans[25:2]);
 
-reg exp_next;
+reg [7:0] exp_next;
 reg sig_next;
 reg [4:0] zero_count_reg;
+
+wire [8:0] exp_next_zero;
+assign exp_next_zero = {1'b0, exp_next};
 
 wire [7:0] for_exp_next;
 assign for_exp_next = {7'd0, marume_up};
@@ -151,24 +154,24 @@ wire [22:0] for_ZLC2_fra;
 assign for_ZLC2_fra = {22'd0, |ans_reg[1:0]};
 wire [22:0] ZLC2_fra;
 assign ZLC2_fra = ans_shift_reg + for_ZLC2_fra;
-wire [7:0] ZLC2_exp;
-assign ZLC2_exp = exp_next - 8'd1;
+wire [8:0] ZLC2_exp;
+assign ZLC2_exp = exp_next_zero - 9'd1;
 
 wire [22:0] for_ZLC3_fra;
 assign for_ZLC3_fra = {22'd0, ans_reg[0]};
 wire [22:0] ZLC3_fra;
 assign ZLC3_fra = ans_shift_reg + for_ZLC3_fra;
-wire [7:0] ZLC3_exp;
-assign ZLC3_exp = exp_next - 8'd2;
+wire [8:0] ZLC3_exp;
+assign ZLC3_exp = exp_next_zero - 9'd2;
 
 wire [22:0] ZLC_lt3_fra;
 assign ZLC_lt3_fra = ans_shift_reg;
-wire [7:0] for_ZLC_lt3_exp;
-assign for_ZLC_lt3_exp = {3'd0, zero_count_reg};
-wire [7:0] for2_ZLC_lt3_exp;
-assign for2_ZLC_lt3_exp = {7'd0, 1'b1};
-wire [7:0] ZLC_lt3_exp;
-assign ZLC_lt3_exp = exp_next - for_ZLC_lt3_exp + for2_ZLC_lt3_exp;
+wire [8:0] for_ZLC_lt3_exp;
+assign for_ZLC_lt3_exp = {4'd0, zero_count_reg};
+wire [8:0] for2_ZLC_lt3_exp;
+assign for2_ZLC_lt3_exp = {8'd0, 1'b1};
+wire [8:0] ZLC_lt3_exp;
+assign ZLC_lt3_exp = exp_next_zero - for_ZLC_lt3_exp + for2_ZLC_lt3_exp;
 
 
 always @(posedge clk) begin
@@ -181,22 +184,82 @@ always @(posedge clk) begin
         exp_big <= 8'd0;
         sig_big <= 1'b0;
         sig_small <= 1'b0;
-        exp_next <= 1'b0;
+        exp_next <= 8'b0;
         sig_next <= 1'b0;
         zero_count_reg <= 5'd0;
     end else begin
         if (op1_is_abs_bigger) begin
             op_big <= fra1;
-            op_small <= fra2_shifted;
+            // op_small <= fra2_shifted;
             exp_big <= exp1;
             sig_big <= sig1;
             sig_small <= sig2;
+            case (shift_2)
+            8'd0 : op_small <= fra2;
+            8'd1 : op_small <= fra2 >> 1;
+            8'd2 : op_small <= fra2 >> 2;
+            8'd3 : op_small <= fra2 >> 3;
+            8'd4 : op_small <= fra2 >> 4;
+            8'd5 : op_small <= fra2 >> 5;
+            8'd6 : op_small <= fra2 >> 6;
+            8'd7 : op_small <= fra2 >> 7;
+            8'd8 : op_small <= fra2 >> 8;
+            8'd9 : op_small <= fra2 >> 9;
+            8'd10 : op_small <= fra2 >> 10;
+            8'd11 : op_small <= fra2 >> 11;
+            8'd12 : op_small <= fra2 >> 12;
+            8'd13 : op_small <= fra2 >> 13;
+            8'd14 : op_small <= fra2 >> 14;
+            8'd15 : op_small <= fra2 >> 15;
+            8'd16 : op_small <= fra2 >> 16;
+            8'd17 : op_small <= fra2 >> 17;
+            8'd18 : op_small <= fra2 >> 18;
+            8'd19 : op_small <= fra2 >> 19;
+            8'd20 : op_small <= fra2 >> 20;
+            8'd21 : op_small <= fra2 >> 21;
+            8'd22 : op_small <= fra2 >> 22;
+            8'd23 : op_small <= fra2 >> 23;
+            8'd24 : op_small <= fra2 >> 24;
+            8'd25 : op_small <= fra2 >> 25;
+            8'd26 : op_small <= fra2 >> 26;
+            default : op_small <= {27'd0, |fra2};
+            endcase
         end else begin
             op_big <= fra2;
-            op_small <= fra1_shifted;
+            // op_small <= fra1_shifted;
             exp_big <= exp2;
             sig_big <= sig2;
             sig_small <= sig1;
+            case (shift_1)
+            8'd0 : op_small <= fra2;
+            8'd1 : op_small <= fra2 >> 1;
+            8'd2 : op_small <= fra2 >> 2;
+            8'd3 : op_small <= fra2 >> 3;
+            8'd4 : op_small <= fra2 >> 4;
+            8'd5 : op_small <= fra2 >> 5;
+            8'd6 : op_small <= fra2 >> 6;
+            8'd7 : op_small <= fra2 >> 7;
+            8'd8 : op_small <= fra2 >> 8;
+            8'd9 : op_small <= fra2 >> 9;
+            8'd10 : op_small <= fra2 >> 10;
+            8'd11 : op_small <= fra2 >> 11;
+            8'd12 : op_small <= fra2 >> 12;
+            8'd13 : op_small <= fra2 >> 13;
+            8'd14 : op_small <= fra2 >> 14;
+            8'd15 : op_small <= fra2 >> 15;
+            8'd16 : op_small <= fra2 >> 16;
+            8'd17 : op_small <= fra2 >> 17;
+            8'd18 : op_small <= fra2 >> 18;
+            8'd19 : op_small <= fra2 >> 19;
+            8'd20 : op_small <= fra2 >> 20;
+            8'd21 : op_small <= fra2 >> 21;
+            8'd22 : op_small <= fra2 >> 22;
+            8'd23 : op_small <= fra2 >> 23;
+            8'd24 : op_small <= fra2 >> 24;
+            8'd25 : op_small <= fra2 >> 25;
+            8'd26 : op_small <= fra2 >> 26;
+            default : op_small <= {27'd0, |fra2};
+            endcase
         end
         ans_reg <= ans;
         ans_shift_reg <= ans_shift;
@@ -216,32 +279,32 @@ always @(posedge clk) begin
             // ready <= 1'b1;
             // valid <= 1'b1;
         end else if (zero_count_reg == 5'd2) begin
-            if (ZLC2_exp < 0) begin
+            if (ZLC2_exp[8]) begin
                 result <= {sig_next, 8'd0, ZLC2_fra};//ここのfraに意味はない
                 // ready <= 1'b1;
                 // valid <= 1'b0;
             end else begin
-                result <= {sig_next, ZLC2_exp, ZLC2_fra};
+                result <= {sig_next, ZLC2_exp[7:0], ZLC2_fra};
                 // ready <= 1'b1;
                 // valid <= 1'b1;
             end
         end else if (zero_count_reg == 5'd3) begin
-            if (ZLC3_exp < 0) begin
+            if (ZLC3_exp[8]) begin
                 result <= {sig_next, 8'd0, ZLC3_fra};
                 // ready <= 1'b1;
                 // valid <= 1'b0;
             end else begin
-                result <= {sig_next, ZLC3_exp, ZLC3_fra};
+                result <= {sig_next, ZLC3_exp[7:0], ZLC3_fra};
                 // ready <= 1'b1;
                 // valid <= 1'b1;
             end
         end else begin
-            if (ZLC_lt3_exp < 0) begin
+            if (ZLC_lt3_exp[8]) begin
                 result <= {sig_next, 8'd0, ZLC3_fra};
                 // ready <= 1'b1;
                 // valid <= 1'b0;
             end else begin
-                result <= {sig_next, ZLC_lt3_exp, ZLC_lt3_fra};
+                result <= {sig_next, ZLC_lt3_exp[7:0], ZLC_lt3_fra};
                 // ready <= 1'b1;
                 // valid <= 1'b1;
             end
