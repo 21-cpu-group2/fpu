@@ -6,10 +6,9 @@ module test_fmul();
     wire [31:0] op2;
     logic [31:0] result;
     wire clk;
-    logic ready;
-    logic valid;
     logic [31:0] op1logic;
     logic [31:0] op2logic;
+    logic reset;
     logic clklogic;
 
     int sig1, sig2, exp1, exp2;
@@ -30,7 +29,7 @@ module test_fmul();
    assign op2 = op2logic;
    assign clk = clklogic;
    
-   fmul f(op1,op2,result,clk , ready, valid);
+   fmul f(op1,op2,result,clk , reset);
 
 
    always begin
@@ -38,6 +37,10 @@ module test_fmul();
    end
 
    initial begin
+       reset = 0;
+       #2;
+       reset = 1;
+       #2;
        clklogic =0;
        epsiron = 2 ** (-126);
        for(sig1 = 0; sig1 < 2; sig1++) begin
@@ -64,13 +67,13 @@ module test_fmul();
                         end else begin
                             abs = resultreal - fmulresult;
                         end
-                        if (resultbit[30:23] == 8'b0 || resultbit[30:23] == 8'd255)begin
-                            if (valid)begin
-                                $display("return is not valid\n");
-                                ovf = 1'b1;
-                            end
-                        end
-                        else if (abs >= gosa && abs >= epsiron) begin
+                        // if (resultbit[30:23] == 8'b0 || resultbit[30:23] == 8'd255)begin
+                        //     if (valid)begin
+                        //         $display("return is not valid\n");
+                        //         ovf = 1'b1;
+                        //     end
+                        // end else
+                        if (abs >= gosa && abs >= epsiron) begin
                             $display("result is not correct\n");
                             $display("op1 = %b\n", op1logic);
                             $display("op2 = %b\n", op2logic);

@@ -6,8 +6,7 @@ module fmul
     input wire [31:0] op2,
     output reg [31:0] result,
     input wire clk,
-    output reg ready,
-    output reg valid
+    input wire reset
     );
 
     wire [12:0] H1;
@@ -38,14 +37,6 @@ module fmul
     assign ex_exp1 = {1'b0, exp1};
     wire [8:0] ex_exp2;
     assign ex_exp2 = {1'b0, exp2};
-    
-    always @(posedge clk) begin
-        HH <= H1 * H2;
-        HL <= H1 * L2;
-        LH <= L1 * H2;
-        res_exp <= ex_exp1 + ex_exp2 + 9'd129;
-        res_sig <= sig1 ^ sig2; //XOR      
-    end
 
     reg [25:0] sum;
     reg [8:0] res_exp_plus1;
@@ -53,39 +44,40 @@ module fmul
     reg res_sig_2;
 
     always @(posedge clk) begin
-        sum <= HH + (HL >> 11) + (LH >> 11) + 26'd2;
-        res_exp_plus1 <= res_exp + 9'b1;
-        res_sig_2 <= res_sig;
-        res_exp_2 <= res_exp;
-    end
-
-    always @(posedge clk) begin
-        if (ready) begin
-            valid <= 1'b0;
-            ready <= 1'b0;
-        end
-        if (sum[25]) begin
-            if (res_exp_plus1[8]) begin
-                result <= {res_sig_2, res_exp_plus1[7:0], sum[24:2]};
-                ready <= 1;
-                valid <= 1;
-            end else begin
-                valid <= 1;
-                ready <= 0;
-            end
+        if(~reset) begin
+            result <= 32'd0;
+            HH <= 26'd0;
+            HL <= 26'd0;
+            LH <= 26'd0;
+            res_exp <= 9'd0;
+            res_sig <= 1'd0;
+            sum <= 26'd0;
+            res_exp_plus1 <= 9'd0;
+            res_exp_2 <= 9'd0;
+            res_sig_2 <= 1'd0;
         end else begin
-            if (res_exp_2[8]) begin
-                result <= {res_sig_2, res_exp_2[7:0], sum[23:1]};
-                ready <= 1;
-                valid <= 1;
+            HH <= H1 * H2;
+            HL <= H1 * L2;
+            LH <= L1 * H2;
+            res_exp <= ex_exp1 + ex_exp2 + 9'd129;
+            res_sig <= sig1 ^ sig2; //XOR 
+
+            sum <= HH + (HL >> 11) + (LH >> 11) + 26'd2;
+            res_exp_plus1 <= res_exp + 9'b1;
+            res_sig_2 <= res_sig;
+            res_exp_2 <= res_exp;
+            
+            if (sum[25]) begin
+                if (res_exp_plus1[8]) begin
+                    result <= {res_sig_2, res_exp_plus1[7:0], sum[24:2]};
+                end
             end else begin
-                valid <= 1;
-                ready <= 0;
+                if (res_exp_2[8]) begin
+                    result <= {res_sig_2, res_exp_2[7:0], sum[23:1]};
+                end
             end
         end
     end
-
-
 
 endmodule
 `default_nettype wire
