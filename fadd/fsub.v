@@ -79,8 +79,8 @@ module fadd(
     input wire [31:0] op2,
     output reg [31:0] result,
     input wire clk,
-    output reg ready,
-    output reg valid,//実質アンダーフロー検知
+    // output reg ready,
+    // output reg valid,//実質アンダーフロー検知
     input wire reset
 );
 
@@ -174,8 +174,8 @@ assign ZLC_lt3_exp = exp_next - for_ZLC_lt3_exp + for2_ZLC_lt3_exp;
 always @(posedge clk) begin
     if (~reset) begin
         result <= 32'd0;
-        ready <= 1'b0;
-        valid <= 1'b0;
+        // ready <= 1'b0;
+        // valid <= 1'b0;
         op_big <= 28'd0;
         op_small <= 28'd0;
         exp_big <= 8'd0;
@@ -203,47 +203,47 @@ always @(posedge clk) begin
         exp_next <= (exp_big + for_exp_next);
         sig_next <= sig_big;
         zero_count_reg <= zero_count;
-        if (ready) begin
-            ready <= 1'b0;
-            valid <= 1'b0;
-        end
+        // if (ready) begin
+        //     ready <= 1'b0;
+        //     valid <= 1'b0;
+        // end
         if (zero_count_reg == 5'd0) begin
             result <= {sig_next, ZLC0_exp, ZLC0_fra};
-            ready <= 1'b1;
-            valid <= 1'b1;
+            // ready <= 1'b1;
+            // valid <= 1'b1;
         end else if (zero_count_reg == 5'd1) begin
             result <= {sig_next, ZLC1_exp, ZLC1_fra};
-            ready <= 1'b1;
-            valid <= 1'b1;
+            // ready <= 1'b1;
+            // valid <= 1'b1;
         end else if (zero_count_reg == 5'd2) begin
             if (ZLC2_exp < 0) begin
                 result <= {sig_next, 8'd0, ZLC2_fra};//ここのfraに意味はない
-                ready <= 1'b1;
-                valid <= 1'b0;
+                // ready <= 1'b1;
+                // valid <= 1'b0;
             end else begin
                 result <= {sig_next, ZLC2_exp, ZLC2_fra};
-                ready <= 1'b1;
-                valid <= 1'b1;
+                // ready <= 1'b1;
+                // valid <= 1'b1;
             end
         end else if (zero_count_reg == 5'd3) begin
             if (ZLC3_exp < 0) begin
                 result <= {sig_next, 8'd0, ZLC3_fra};
-                ready <= 1'b1;
-                valid <= 1'b0;
+                // ready <= 1'b1;
+                // valid <= 1'b0;
             end else begin
                 result <= {sig_next, ZLC3_exp, ZLC3_fra};
-                ready <= 1'b1;
-                valid <= 1'b1;
+                // ready <= 1'b1;
+                // valid <= 1'b1;
             end
         end else begin
             if (ZLC_lt3_exp < 0) begin
                 result <= {sig_next, 8'd0, ZLC3_fra};
-                ready <= 1'b1;
-                valid <= 1'b0;
+                // ready <= 1'b1;
+                // valid <= 1'b0;
             end else begin
                 result <= {sig_next, ZLC_lt3_exp, ZLC_lt3_fra};
-                ready <= 1'b1;
-                valid <= 1'b1;
+                // ready <= 1'b1;
+                // valid <= 1'b1;
             end
         end
     end
