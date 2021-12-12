@@ -1070,7 +1070,7 @@ always @(posedge clk) begin
 		ram[1023] <= 36'b011010011101110010100010101101010001;
 	end else begin
 		ram_read <= ram[op[23:14]];
-		exp2 <= (for_exp2 >> 1'b1);
+		exp2 <= {1'b0,for_exp2[6:0]};
 		if (op[23]) begin
 			res <= {1'b0, op[13:1]};
 		end else begin
