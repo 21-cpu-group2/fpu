@@ -1082,15 +1082,15 @@ always @(posedge clk) begin
 		exp3 <= exp2[7:0];
 		frac <= ram_main;
 
-		if (ready) begin
-			ready <= 1'b0;
-		end
+		// if (ready) begin
+		// 	ready <= 1'b0;
+		// end
 		if (grad_mul_res[3]) begin//精度が大丈夫そうなら消したほうが早いかも
 			result <= {1'b0, exp3, result_plus1_1[22:0]};
-			ready <= 1'b1;
+			// ready <= 1'b1;
 		end else begin
 			result <= {1'b0, exp3, result_1[22:0]};
-			ready <= 1'b1;
+			// ready <= 1'b1;
 		end
 	end 
 end

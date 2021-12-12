@@ -5,8 +5,7 @@ module ftoi (
     input wire [31:0] op,
     output reg [31:0] result,
     input wire clk,
-    input wire reset,
-    output reg valid
+    input wire reset
 );
 
 wire sig;
@@ -27,13 +26,16 @@ assign ans = flag_ans[31:0];
 wire [31:0] add_ans;
 assign add_ans = add + ans;
 
+
+wire [31:0] add_ans_reverse;
+assign add_ans_reverse = ~add_ans;
 wire [31:0] minus_add_ans;
-assign minus_add_ans = (~add_ans) + 32'd1;
+assign minus_add_ans = add_ans_reverse + 32'd1;
 
 always @(posedge clk) begin
     if (~reset) begin
         result <= 32'd0;
-        valid <= 1'b0;
+        // valid <= 1'b0;
         sig_reg <= 1'b0;
     end else begin
         sig_reg <= sig;
@@ -72,15 +74,15 @@ always @(posedge clk) begin
             8'd157 : flag_ans <= {3'd1, fra, 7'b0};
             default: flag_ans <= {1'b0, 32'd0};
         endcase
-        if (valid) begin
-            valid <= 1'b0;
-        end
+        // if (valid) begin
+        //     valid <= 1'b0;
+        // end
         if (sig_reg) begin
             result <= minus_add_ans;
-            valid <= 1'b1;
+            // valid <= 1'b1;
         end else begin
             result <= add_ans;
-            valid <= 1'b1;
+            // valid <= 1'b1;
         end
     end
 end
