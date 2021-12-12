@@ -74,7 +74,7 @@ assign ans_shift_out = (op[27]) ? op[26:4] :
 
 endmodule
 
-module fadd(
+module fsub(
     input wire [31:0] op1,
     input wire [31:0] op2,
     output reg [31:0] result,
