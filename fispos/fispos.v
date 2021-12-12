@@ -3,8 +3,8 @@ module fispos (
     output wire result
 );
     
-wire iszero;
-assign notzero = |op[30:0];
+wire notzero;
+assign notzero = |op[30:23];
 assign result = notzero & ~op[31]; 
 
 endmodule

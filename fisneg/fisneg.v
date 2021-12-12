@@ -3,7 +3,7 @@ module fisneg (
     output wire result
 );
 
-    wire iszero;
+    wire notzero;
     assign notzero = |op[30:23];
     assign result = notzero & op[31];
     
