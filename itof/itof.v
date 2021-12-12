@@ -49,8 +49,7 @@ module itof (
     input wire [31:0] op,
     output reg [31:0] result,
     input wire clk,
-    input wire reset,
-    output reg valid
+    input wire reset
 );
 
 reg sig;
@@ -88,60 +87,6 @@ reg [4:0] fra_zero_count_reg;
 reg is_zero_reg;
 reg exact;
 
-always @(posedge clk) begin
-    if (~reset) begin
-        result <= 32'd0;
-        valid <= 1'b0;
-        exp_zero_count_reg <= 3'd0;
-        fra_result <= 23'd0;
-        sig_result <= 1'b0;
-        sub_from <= 8'd0;
-        use_fra_plus_1 <= 1'b0;
-        for_fra_plus_1 <= 24'd0;
-        fra_zero_count_reg <= 5'd0;
-        is_zero_reg <= 1'b0;
-        exact <= 1'b0;
-
-    end
-    if (op[31]) begin
-        sig <= 1'b1;
-        abs_op <= ~op[30:0] + 31'd1;
-    end else begin
-        sig <= 1'b0;
-        abs_op <= op[30:0];
-    end
-end
-
-always @(posedge clk) begin
-    sig_result <= sig;
-    exp_zero_count_reg <= exp_zero_count;
-    fra_zero_count_reg <= fra_zero_count;
-    for_fra_plus_1 <= fra;
-    if (|abs_op[30:24]) begin//対応するち�?�?どのfloatがな�?場�?
-        exact <= 1'b0;
-        is_zero_reg <= 1'b0;
-        if (kuriagari & fra_all_one) begin
-            fra_result <= 23'd0;
-            sub_from <= 8'd158;
-            use_fra_plus_1 <= 1'b0;
-        end else if (kuriagari) begin
-            fra_result <= 23'd0;//使わな�?
-            use_fra_plus_1 <= 1'b1;
-            sub_from <= 8'd157;
-        end else begin
-            fra_result <= fra[22:0];
-            use_fra_plus_1 <= 1'b0;
-            sub_from <= 8'd157;
-        end
-    end else begin //対応するち�?�?どのfloatがあ�?
-        exact <= 1'b1;
-        fra_result <= fra_2;
-        sub_from <= 8'd150;
-        use_fra_plus_1 <= 1'b0;
-        is_zero_reg <= is_zero;
-    end
-end
-
 wire [23:0] fra_plus_1;
 assign fra_plus_1 = for_fra_plus_1 + 24'd1;
 wire [7:0] exp_exact;
@@ -157,26 +102,70 @@ wire [31:0] result_exact;
 assign result_exact = {sig_result, exp_exact, fra_result};
 
 always @(posedge clk) begin
-    if (~exact) begin
-        if(use_fra_plus_1) begin
-            result <= result_use_fra_plus_1;
-            valid <= 1'b1;
-        end else begin
-            result <= result_not_exact;
-            valid <= 1'b1;
-        end
-    end else if (is_zero_reg) begin
-        result <= 32'b0;
-        valid <= 1'b1;
-    end else if (exact) begin
-        result <= result_exact;
-        valid <= 1'b1;
+    if (~reset) begin
+        result <= 32'd0;
+        // valid <= 1'b0;
+        exp_zero_count_reg <= 3'd0;
+        fra_result <= 23'd0;
+        sig_result <= 1'b0;
+        sub_from <= 8'd0;
+        use_fra_plus_1 <= 1'b0;
+        for_fra_plus_1 <= 24'd0;
+        fra_zero_count_reg <= 5'd0;
+        is_zero_reg <= 1'b0;
+        exact <= 1'b0;
     end else begin
-        valid <= 1'b0;
+        if (op[31]) begin
+            sig <= 1'b1;
+            abs_op <= ~op[30:0] + 31'd1;
+        end else begin
+            sig <= 1'b0;
+            abs_op <= op[30:0];
+        end
+        sig_result <= sig;
+        exp_zero_count_reg <= exp_zero_count;
+        fra_zero_count_reg <= fra_zero_count;
+        for_fra_plus_1 <= fra;
+        if (|abs_op[30:24]) begin//対応するち�?�?どのfloatがな�?場�?
+            exact <= 1'b0;
+            is_zero_reg <= 1'b0;
+            if (kuriagari & fra_all_one) begin
+                fra_result <= 23'd0;
+                sub_from <= 8'd158;
+                use_fra_plus_1 <= 1'b0;
+            end else if (kuriagari) begin
+                fra_result <= 23'd0;//使わな�?
+                use_fra_plus_1 <= 1'b1;
+                sub_from <= 8'd157;
+            end else begin
+                fra_result <= fra[22:0];
+                use_fra_plus_1 <= 1'b0;
+                sub_from <= 8'd157;
+            end
+        end else begin //対応するち�?�?どのfloatがあ�?
+            exact <= 1'b1;
+            fra_result <= fra_2;
+            sub_from <= 8'd150;
+            use_fra_plus_1 <= 1'b0;
+            is_zero_reg <= is_zero;
+        end
+        if (~exact) begin
+            if(use_fra_plus_1) begin
+                result <= result_use_fra_plus_1;
+                // valid <= 1'b1;
+            end else begin
+                result <= result_not_exact;
+                // valid <= 1'b1;
+            end
+        end else if (is_zero_reg) begin
+            result <= 32'b0;
+            // valid <= 1'b1;
+        end else if (exact) begin
+            result <= result_exact;
+            // valid <= 1'b1;
+        end
     end
 end
-
-
     
 endmodule
 `default_nettype wire

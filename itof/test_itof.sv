@@ -5,7 +5,7 @@ module test_itof();
     wire [31:0] op1;
     logic [31:0] result;
     wire clk;
-    logic valid;
+    // logic valid;
     logic reset;
     logic [31:0] op1logic;
     logic clklogic;
@@ -22,7 +22,7 @@ module test_itof();
    assign op1 = op1logic;
    assign clk = clklogic;
    
-   itof f(op1,result,clk , reset, valid);
+   itof f(op1,result,clk , reset);
 
    always begin
        #1 clklogic <= ~clklogic;
