@@ -5,7 +5,7 @@ module test_fsqrt();
     wire [31:0] op1;
     logic [31:0] result;
     wire clk;
-    logic ready;
+    // logic ready;
     logic reset;
     logic [31:0] op1logic;
     logic clklogic;
@@ -23,7 +23,7 @@ module test_fsqrt();
    assign op1 = op1logic;
    assign clk = clklogic;
    
-   fsqrt f(op1, result, clk, reset, ready);
+   fsqrt f(op1, result, clk, reset);
 
    always begin
        #1 clklogic <= ~clklogic;

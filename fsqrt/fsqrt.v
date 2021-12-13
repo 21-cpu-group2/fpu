@@ -4,8 +4,7 @@ module fsqrt (
     input wire [31:0] op,
     output reg [31:0] result,
     input wire clk,
-    input wire reset,
-    output reg ready
+    input wire reset
 );
 
 reg [35:0] ram_read;
@@ -39,7 +38,6 @@ assign result_plus1_1 = result_1 + 24'd1;
 always @(posedge clk) begin
     if (~reset) begin
         result <= 32'd0;
-        ready <= 1'b0;
         exp2 <= 9'd0;
 		exp3 <= 8'd0;
 		grad_mul_res <= 27'd0;
