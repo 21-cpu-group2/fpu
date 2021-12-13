@@ -40,7 +40,7 @@ always @(posedge clk) begin
     if (~reset) begin
         result <= 32'd0;
         ready <= 1'b0;
-        exp2 <= 8'd0;
+        exp2 <= 9'd0;
 		exp3 <= 8'd0;
 		grad_mul_res <= 27'd0;
 		frac <= 24'd0;
@@ -1070,7 +1070,7 @@ always @(posedge clk) begin
 		ram[1023] <= 36'b011010011101110010100010101101010001;
 	end else begin
 		ram_read <= ram[op[23:14]];
-		exp2 <= {1'b0,for_exp2[6:0]};
+		exp2 <= for_exp2;
 		if (op[23]) begin
 			res <= {1'b0, op[13:1]};
 		end else begin
@@ -1079,7 +1079,7 @@ always @(posedge clk) begin
 		
 
 		grad_mul_res <= ((ram_grad * res) >> 8);
-		exp3 <= exp2[7:0];
+		exp3 <= exp2[8:1];
 		frac <= ram_main;
 
 		// if (ready) begin

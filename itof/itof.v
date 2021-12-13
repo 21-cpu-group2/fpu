@@ -18,7 +18,7 @@ module ZLC_fra(
     input wire [23:0] op,
     output wire [28:0] out
 );
-assign out =(op[23]) ? {5'd0, op[22:0], 1'b0} :
+assign out =(op[23]) ? {5'd0, op[22:0], 1'd0} :
             (op[22]) ? {5'd1, op[21:0], 1'd0, 1'b0} :
             (op[21]) ? {5'd2, op[20:0], 2'd0, 1'b0} :
             (op[20]) ? {5'd3, op[19:0], 3'd0, 1'b0} :
@@ -41,7 +41,7 @@ assign out =(op[23]) ? {5'd0, op[22:0], 1'b0} :
             (op[3]) ? {5'd20, op[2:0], 20'd0, 1'b0} :
             (op[2]) ? {5'd21, op[1:0], 21'd0, 1'b0} :
             (op[1]) ? {5'd22, op[0], 22'd0, 1'b0} :
-            (op[0]) ? {5'd23, 23'd0, 1'b0} : {5'd24, 24'd0, 1'b1};
+            (op[0]) ? {5'd23, 23'd0, 1'b0} : {5'd24, 23'd0, 1'b1};
 
 endmodule
 
@@ -67,6 +67,8 @@ wire fra_all_one;
 assign fra_all_one = &fra;
 
 reg [2:0] exp_zero_count_reg;
+wire [7:0] zero_exp_zero_count;
+assign zero_exp_zero_count = {5'd0, exp_zero_count_reg};
 reg [22:0] fra_result;
 reg sig_result;
 reg [7:0] sub_from;
@@ -83,6 +85,8 @@ assign fra_2 = outpre_2[23:1];
 assign is_zero = outpre_2[0];
 
 reg [4:0] fra_zero_count_reg;
+wire [7:0] zero_fra_zero_count;
+assign zero_fra_zero_count = {3'd0, fra_zero_count_reg};
 
 reg is_zero_reg;
 reg exact;
@@ -90,9 +94,9 @@ reg exact;
 wire [23:0] fra_plus_1;
 assign fra_plus_1 = for_fra_plus_1 + 24'd1;
 wire [7:0] exp_exact;
-assign exp_exact = sub_from - fra_zero_count_reg;
+assign exp_exact = sub_from - zero_fra_zero_count;
 wire [7:0] exp_not_exact;
-assign exp_not_exact = sub_from - exp_zero_count_reg;
+assign exp_not_exact = sub_from - zero_exp_zero_count;
 
 wire [31:0] result_use_fra_plus_1;
 assign result_use_fra_plus_1 = {sig_result, exp_not_exact, fra_plus_1[22:0]};
