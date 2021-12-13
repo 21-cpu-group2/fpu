@@ -1,8 +1,8 @@
 `timescale 1us / 100ns
 `default_nettype wire
 module ontest_ftoi (
-    (* mark_debug = "true" *) input wire clk,
-    (* mark_debug = "true" *) input wire reset,
+    input wire clk,
+    input wire reset,
     (* mark_debug = "true" *) output wire [31:0] result_debug
 );
 
@@ -17,8 +17,8 @@ make_fra1 fra1(clk, reset, fra);
 (* mark_debug = "true" *) wire [31:0] op;
 assign op = {sig, exp, fra};
 
-wire valid;
-
-ftoi ftoi(op, result_debug, clk, reset, valid);
+ftoi ftoi_test(op, result_debug, clk, reset);
     
 endmodule
+
+`default_nettype wire
