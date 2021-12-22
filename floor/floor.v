@@ -35,10 +35,10 @@ always @(posedge clk) begin
         new_exp_reg <= 8'd0;
         new_fra_reg <= 25'd0;
         fra_desimal <= 23'd0;
-        for_add <= 23'd0;
+        for_add <= 25'd0;
     end else begin
         new_sig_reg <= sig;
-        if ((exp[8] == 1'b0) & (~(&exp[6:0]))) begin//exp<=126
+        if ((exp[7] == 1'b0) & (~(&exp[6:0]))) begin//exp<=126
             fra_desimal <= 23'd0;
             for_add <= 25'd0;
             if (sig) begin
@@ -175,7 +175,7 @@ always @(posedge clk) begin
         end
         if (~new_sig_reg | ~(|fra_desimal)) begin//正もしくは負だけど小数部分が0のときは切り捨て
             result <= {new_sig_reg, new_exp_reg, new_fra_reg[22:0]};
-        end else if (add_fra[25]) begin//負で（絶対値として）切り上げたらexpを変える必要がある場合
+        end else if (add_fra[24]) begin//負で（絶対値として）切り上げたらexpを変える必要がある場合
             result <= {new_sig_reg, exp_plus_1, 23'd0};
         end else begin
             result <= {new_sig_reg, new_exp_reg, add_fra[22:0]};
@@ -185,3 +185,4 @@ end
 
 endmodule
 `default_nettype wire
+
