@@ -9,7 +9,7 @@ module fless (
     wire exp1 = op1[30:23];
     wire exp2 = op2[30:23];
 
-    assign result = (sig1 == sig2 && exp1 == exp2)? (op1[22:0] < op2[22:0]) :
-                    (sig1 == sig2)? (exp1 < exp2) : sig1;
+    assign result = ((sig1 == sig2) && (exp1 == exp2)) ? (op1[22:0] < op2[22:0]) ^ sig1 :
+                    (sig1 == sig2) ? (exp1 < exp2) ^ sig1 : sig1;
 
 endmodule
