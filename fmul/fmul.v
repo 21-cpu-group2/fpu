@@ -70,10 +70,15 @@ module fmul
             if (sum[25]) begin
                 if (res_exp_plus1[8]) begin
                     result <= {res_sig_2, res_exp_plus1[7:0], sum[24:2]};
-                end
+                end else begin{
+                    result <= 32'd0;
+                }
             end else begin
                 if (res_exp_2[8]) begin
                     result <= {res_sig_2, res_exp_2[7:0], sum[23:1]};
+                end else begin {
+                    result <= 32'd0;
+                }
                 end
             end
         end
