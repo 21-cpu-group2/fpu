@@ -1,1 +1,17 @@
 /fmul_test
+/xsim.dir
+webtalk.log
+xelab.log
+xsim.jou
+xsim_21856.backup.log
+webtalk_20504.backup.jou
+xelab.pb
+xsim.log
+xvlog.log
+samplemake_fmul.sim.wdb
+webtalk.jou
+webtalk_20504.backup.log
+xsim_21856.backup.jou
+xvlog.pb
+xsim*
+vivado*

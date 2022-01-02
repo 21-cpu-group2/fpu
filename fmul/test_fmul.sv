@@ -43,49 +43,52 @@ module test_fmul();
        #2;
        clklogic =0;
        epsiron = 2 ** (-126);
-       for(sig1 = 0; sig1 < 2; sig1++) begin
-           for(sig2 = 0; sig2 < 2; sig2++) begin
-               for(exp1 = 1; exp1 < 256; exp1++) begin
-                   for(exp2 = 1; exp2 < 256; exp2++) begin 
-                        #1;
-                        error = 1'b0;
+       op1logic = 32'd0;
+       op2logic = 32'd0;
+       #6;
+    //    for(sig1 = 0; sig1 < 2; sig1++) begin
+    //        for(sig2 = 0; sig2 < 2; sig2++) begin
+    //            for(exp1 = 1; exp1 < 256; exp1++) begin
+    //                for(exp2 = 1; exp2 < 256; exp2++) begin 
+    //                     #1;
+    //                     error = 1'b0;
 
-                        {fra1, dum1} = $urandom();
-                        {fra2, dum2} = $urandom();
+    //                     {fra1, dum1} = $urandom();
+    //                     {fra2, dum2} = $urandom();
 
-                        op1logic = {sig1[0], exp1[7:0], fra1};
-                        op2logic = {sig2[0], exp2[7:0], fra2};
-                        op1real = $bitstoshortreal(op1logic);
-                        op2real = $bitstoshortreal(op2logic);
-                        resultreal = op1real * op2real;
-                        resultbit = $shortrealtobits(resultreal);
-                        gosa = resultreal * 2 ** (-22);
-                        #6;
-                        fmulresult = $bitstoshortreal(result);
-                        if (fmulresult - resultreal > 0) begin
-                            abs = fmulresult - resultreal;
-                        end else begin
-                            abs = resultreal - fmulresult;
-                        end
-                        // if (resultbit[30:23] == 8'b0 || resultbit[30:23] == 8'd255)begin
-                        //     if (valid)begin
-                        //         $display("return is not valid\n");
-                        //         ovf = 1'b1;
-                        //     end
-                        // end else
-                        if (abs >= gosa && abs >= epsiron) begin
-                            $display("result is not correct\n");
-                            $display("op1 = %b\n", op1logic);
-                            $display("op2 = %b\n", op2logic);
-                            error = 1'b1;
-                        end
-                        if (~(result == resultbit)) begin
-                            error_in_bit = 1'b1;
-                        end
-                    end
-                end
-            end
-        end
+    //                     op1logic = {sig1[0], exp1[7:0], fra1};
+    //                     op2logic = {sig2[0], exp2[7:0], fra2};
+    //                     op1real = $bitstoshortreal(op1logic);
+    //                     op2real = $bitstoshortreal(op2logic);
+    //                     resultreal = op1real * op2real;
+    //                     resultbit = $shortrealtobits(resultreal);
+    //                     gosa = resultreal * 2 ** (-22);
+    //                     #6;
+    //                     fmulresult = $bitstoshortreal(result);
+    //                     if (fmulresult - resultreal > 0) begin
+    //                         abs = fmulresult - resultreal;
+    //                     end else begin
+    //                         abs = resultreal - fmulresult;
+    //                     end
+    //                     // if (resultbit[30:23] == 8'b0 || resultbit[30:23] == 8'd255)begin
+    //                     //     if (valid)begin
+    //                     //         $display("return is not valid\n");
+    //                     //         ovf = 1'b1;
+    //                     //     end
+    //                     // end else
+    //                     if (abs >= gosa && abs >= epsiron) begin
+    //                         $display("result is not correct\n");
+    //                         $display("op1 = %b\n", op1logic);
+    //                         $display("op2 = %b\n", op2logic);
+    //                         error = 1'b1;
+    //                     end
+    //                     if (~(result == resultbit)) begin
+    //                         error_in_bit = 1'b1;
+    //                     end
+    //                 end
+    //             end
+    //         end
+    //     end
         $finish;
    end
 endmodule
