@@ -37,18 +37,18 @@ module samplemake_fmul();
         op1logic = 32'd0;
         op2logic = 32'd0;
         #6;
-        $display("%b %b %b\n", op1logic, op2logic, result);//どっちもゼロ
+        $display("%b %b %b", op1logic, op2logic, result);//どっちもゼロ
         for (i = 0; i < 1000; i++) begin
             op1logic = 32'd0;
             op2logic = $urandom();
             #6;
-            $display("%b %b %b\n", op1logic, op2logic, result);//op1がゼロ
+            $display("%b %b %b", op1logic, op2logic, result);//op1がゼロ
         end
         for (i = 0; i < 1000; i++) begin
             op2logic = 32'd0;
             op1logic = $urandom();
             #6;
-            $display("%b %b %b\n", op1logic, op2logic, result);//op2がゼロ
+            $display("%b %b %b", op1logic, op2logic, result);//op2がゼロ
         end
         for (i = 0; i < 1000; i++) begin
             dum = $urandom();
@@ -58,7 +58,7 @@ module samplemake_fmul();
             op1logic = {sig1, exp1, fra1};
             op2logic = $urandom();
             #6;
-            $display("%b %b %b\n", op1logic, op2logic, result);//op1が大きい
+            $display("%b %b %b", op1logic, op2logic, result);//op1が大きい
         end
         for (i = 0; i < 1000; i++) begin
             dum = $urandom();
@@ -68,13 +68,13 @@ module samplemake_fmul();
             op2logic = {sig2, exp2, fra2};
             op1logic = $urandom();
             #6;
-            $display("%b %b %b\n", op1logic, op2logic, result);//op2が大きい
+            $display("%b %b %b", op1logic, op2logic, result);//op2が大きい
         end
         for (i = 0; i < 10000; i++) begin
             op2logic = $urandom();
             op1logic = $urandom();
             #6;
-            $display("%b %b %b\n", op1logic, op2logic, result);//どっちもランダム
+            $display("%b %b %b", op1logic, op2logic, result);//どっちもランダム
         end
         $finish;
    end
