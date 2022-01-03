@@ -15,6 +15,10 @@ assign ram_grad = ram_read[12:0];
 
 reg [35:0] ram [1023:0];
 
+wire is_zero = (op[30:23] == 8'd0);
+reg is_zero_2;
+reg is_zero_3;
+
 wire [8:0] exp = {1'b0, op[30:23]};
 wire [8:0] exp_plus126 = exp + 9'd126;
 wire [8:0] exp_plus127 = exp + 9'd127;
@@ -42,6 +46,8 @@ always @(posedge clk) begin
 		exp3 <= 8'd0;
 		grad_mul_res <= 27'd0;
 		frac <= 24'd0;
+		is_zero_2 <= 1'd0;
+		is_zero_3 <= 1'd0;
 		ram[0] <= 36'b011010100000100111100110101101001110;
 		ram[1] <= 36'b011010100110010001011100101101001100;
 		ram[2] <= 36'b011010101011111010111110101101001001;
@@ -1074,16 +1080,20 @@ always @(posedge clk) begin
 		end else begin
 			res <= op[13:0];
 		end
+		is_zero_2 <= is_zero;
 		
 
 		grad_mul_res <= ((ram_grad * res) >> 8);
 		exp3 <= exp2[8:1];
 		frac <= ram_main;
+		is_zero_3 <= is_zero_2;
 
 		// if (ready) begin
 		// 	ready <= 1'b0;
 		// end
-		if (grad_mul_res[3]) begin//精度が大丈夫そうなら消したほうが早いかも
+		if (is_zero_3) begin
+			result <= 32'd0;
+		end else if (grad_mul_res[3]) begin//精度が大丈夫そうなら消したほうが早いかも
 			result <= {1'b0, exp3, result_plus1_1[22:0]};
 			// ready <= 1'b1;
 		end else begin
