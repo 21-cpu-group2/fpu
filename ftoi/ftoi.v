@@ -40,7 +40,7 @@ always @(posedge clk) begin
     end else begin
         sig_reg <= sig;
         case (exp)
-            8'd126 : flag_ans <= {1'b0, 32'd0};
+            8'd126 : flag_ans <= {1'b0, 32'd1};
             8'd127 : flag_ans <= {fra[22], 32'd1};
             8'd128 : flag_ans <= {fra[21], 31'd1, fra[22]};
             8'd129 : flag_ans <= {fra[20], 30'd1, fra[22:21]};
