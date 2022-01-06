@@ -152,16 +152,16 @@ assign ZLC1_fra = for_ZLC1_fra_sum[23] ? {1'b0, for_ZLC1_fra_sum[22:1]} : for_ZL
 wire [7:0] ZLC1_exp;
 assign ZLC1_exp = for_ZLC1_fra_sum[23] ? (exp_next + 8'd1) : exp_next;
 
-wire [22:0] for_ZLC2_fra;
-assign for_ZLC2_fra = {22'd0, |ans_reg[1:0]};
+wire [23:0] for_ZLC2_fra;
+assign for_ZLC2_fra = {23'd0, |ans_reg[1:0]};
 wire [23:0] for_ZLC2_fra_sum = ans_shift_reg + for_ZLC2_fra;
 wire [22:0] ZLC2_fra;
 assign ZLC2_fra = for_ZLC2_fra_sum[23] ? {1'b0, for_ZLC2_fra_sum[22:1]} : for_ZLC2_fra_sum[22:0];
 wire [8:0] ZLC2_exp;
 assign ZLC2_exp = for_ZLC2_fra_sum[23] ? {1'b0, exp_next} : (exp_next - 8'd1);
 
-wire [22:0] for_ZLC3_fra;
-assign for_ZLC3_fra = {22'd0, ans_reg[0]};
+wire [23:0] for_ZLC3_fra;
+assign for_ZLC3_fra = {23'd0, ans_reg[0]};
 wire [23:0] for_ZLC3_fra_sum = ans_shift_reg + for_ZLC3_fra;
 wire [22:0] ZLC3_fra;
 assign ZLC3_fra = for_ZLC3_fra_sum[23] ? {1'b0, for_ZLC3_fra_sum[22:1]} : for_ZLC3_fra_sum[22:0];
