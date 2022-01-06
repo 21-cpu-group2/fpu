@@ -158,7 +158,7 @@ wire [23:0] for_ZLC2_fra_sum = ans_shift_reg + for_ZLC2_fra;
 wire [22:0] ZLC2_fra;
 assign ZLC2_fra = for_ZLC2_fra_sum[23] ? {1'b0, for_ZLC2_fra_sum[22:1]} : for_ZLC2_fra_sum[22:0];
 wire [8:0] ZLC2_exp;
-assign ZLC2_exp = for_ZLC2_fra_sum[23] ? exp_next : (exp_next - 8'd1);
+assign ZLC2_exp = for_ZLC2_fra_sum[23] ? {1'b0, exp_next} : (exp_next - 8'd1);
 
 wire [22:0] for_ZLC3_fra;
 assign for_ZLC3_fra = {22'd0, ans_reg[0]};
@@ -191,8 +191,8 @@ always @(posedge clk) begin
         exp_next <= 8'b0;
         sig_next <= 1'b0;
         zero_count_reg <= 5'd0;
-        ans_reg <= 22'd0;
-        ans_shift_reg <= 23'd0;
+        ans_reg <= 28'd0;
+        ans_shift_reg <= 24'd0;
     end else begin
         if (op1_is_abs_bigger) begin
             op_big <= fra1;
