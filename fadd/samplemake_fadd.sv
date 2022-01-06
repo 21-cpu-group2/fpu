@@ -76,6 +76,10 @@ module samplemake_fadd();
             #6;
             $display("%b %b %b", op1logic, op2logic, result);//どっちもランダム
         end
+        op1logic = 32'b00000000100000111010110010000000;
+        op2logic = 32'b01111110011111111111111111111111;
+        #6;
+        $display("%b %b %b", op1logic, op2logic, result);
         $finish;
    end
 endmodule

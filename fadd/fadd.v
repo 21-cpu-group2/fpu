@@ -121,7 +121,7 @@ assign ans = (sig_big ^ sig_small) ? (op_big - op_small) : (op_big + op_small);
 reg [27:0] ans_reg;
 wire [4:0] zero_count;
 wire [22:0] ans_shift;
-reg [22:0] ans_shift_reg;
+reg [23:0] ans_shift_reg;
 ZLC ZLC1(ans, zero_count, ans_shift);
 wire marume_up;
 assign marume_up = (~ans[27] && (ans[26] || ans[1]) && &ans[25:2]);
@@ -136,36 +136,40 @@ assign exp_next_zero = {1'b0, exp_next};
 wire [7:0] for_exp_next;
 assign for_exp_next = {7'd0, marume_up};
 
-wire [22:0] for_ZLC0_fra;
-assign for_ZLC0_fra = {22'd0, |ans_reg[3:0]};
+wire [23:0] for_ZLC0_fra;
+assign for_ZLC0_fra = {23'd0, |ans_reg[3:0]};
+wire [23:0] for_ZLC0_fra_sum = ans_shift_reg + for_ZLC0_fra;
 wire [22:0] ZLC0_fra;
-assign ZLC0_fra = ans_shift_reg + for_ZLC0_fra;
+assign ZLC0_fra = for_ZLC0_fra_sum[23] ? {1'b0, for_ZLC0_fra_sum[22:1]} : for_ZLC0_fra_sum[22:0];
 wire [7:0] ZLC0_exp;
-assign ZLC0_exp = exp_next + 8'd1;
+assign ZLC0_exp = for_ZLC0_fra_sum[23] ? (exp_next + 8'd2) : (exp_next + 8'd1);
 
-wire [22:0] for_ZLC1_fra;
-assign for_ZLC1_fra = {22'd0, |ans_reg[2:0]};
+wire [23:0] for_ZLC1_fra;
+assign for_ZLC1_fra = {23'd0, |ans_reg[2:0]};
+wire [23:0] for_ZLC1_fra_sum = ans_shift_reg + for_ZLC1_fra;
 wire [22:0] ZLC1_fra;
-assign ZLC1_fra = ans_shift_reg + for_ZLC1_fra;
+assign ZLC1_fra = for_ZLC1_fra_sum[23] ? {1'b0, for_ZLC1_fra_sum[22:1]} : for_ZLC1_fra_sum[22:0];
 wire [7:0] ZLC1_exp;
-assign ZLC1_exp = exp_next;
+assign ZLC1_exp = for_ZLC1_fra_sum[23] ? (exp_next + 8'd1) : exp_next;
 
 wire [22:0] for_ZLC2_fra;
 assign for_ZLC2_fra = {22'd0, |ans_reg[1:0]};
+wire [23:0] for_ZLC2_fra_sum = ans_shift_reg + for_ZLC2_fra;
 wire [22:0] ZLC2_fra;
-assign ZLC2_fra = ans_shift_reg + for_ZLC2_fra;
+assign ZLC2_fra = for_ZLC2_fra_sum[23] ? {1'b0, for_ZLC2_fra_sum[22:1]} : for_ZLC2_fra_sum[22:0];
 wire [8:0] ZLC2_exp;
-assign ZLC2_exp = exp_next_zero - 9'd1;
+assign ZLC2_exp = for_ZLC2_fra_sum[23] ? exp_next : (exp_next - 8'd1);
 
 wire [22:0] for_ZLC3_fra;
 assign for_ZLC3_fra = {22'd0, ans_reg[0]};
+wire [23:0] for_ZLC3_fra_sum = ans_shift_reg + for_ZLC3_fra;
 wire [22:0] ZLC3_fra;
-assign ZLC3_fra = ans_shift_reg + for_ZLC3_fra;
+assign ZLC3_fra = for_ZLC3_fra_sum[23] ? {1'b0, for_ZLC3_fra_sum[22:1]} : for_ZLC3_fra_sum[22:0];
 wire [8:0] ZLC3_exp;
-assign ZLC3_exp = exp_next_zero - 9'd2;
+assign ZLC3_exp = for_ZLC3_fra_sum[23] ? (exp_next - 8'd1) : (exp_next - 8'd2);
 
 wire [22:0] ZLC_lt3_fra;
-assign ZLC_lt3_fra = ans_shift_reg;
+assign ZLC_lt3_fra = ans_shift_reg[22:0];
 wire [8:0] for_ZLC_lt3_exp;
 assign for_ZLC_lt3_exp = {4'd0, zero_count_reg};
 wire [8:0] for2_ZLC_lt3_exp;
@@ -187,6 +191,8 @@ always @(posedge clk) begin
         exp_next <= 8'b0;
         sig_next <= 1'b0;
         zero_count_reg <= 5'd0;
+        ans_reg <= 22'd0;
+        ans_shift_reg <= 23'd0;
     end else begin
         if (op1_is_abs_bigger) begin
             op_big <= fra1;
@@ -262,7 +268,7 @@ always @(posedge clk) begin
             endcase
         end
         ans_reg <= ans;
-        ans_shift_reg <= ans_shift;
+        ans_shift_reg <= {1'b0, ans_shift};
         exp_next <= (exp_big + for_exp_next);
         sig_next <= sig_big;
         zero_count_reg <= zero_count;
