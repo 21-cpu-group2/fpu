@@ -158,7 +158,7 @@ wire [23:0] for_ZLC2_fra_sum = ans_shift_reg + for_ZLC2_fra;
 wire [22:0] ZLC2_fra;
 assign ZLC2_fra = for_ZLC2_fra_sum[23] ? {1'b0, for_ZLC2_fra_sum[22:1]} : for_ZLC2_fra_sum[22:0];
 wire [8:0] ZLC2_exp;
-assign ZLC2_exp = for_ZLC2_fra_sum[23] ? {1'b0, exp_next} : (exp_next - 8'd1);
+assign ZLC2_exp = for_ZLC2_fra_sum[23] ? exp_next_zero : (exp_next_zero - 9'd1);
 
 wire [23:0] for_ZLC3_fra;
 assign for_ZLC3_fra = {23'd0, ans_reg[0]};
@@ -166,7 +166,7 @@ wire [23:0] for_ZLC3_fra_sum = ans_shift_reg + for_ZLC3_fra;
 wire [22:0] ZLC3_fra;
 assign ZLC3_fra = for_ZLC3_fra_sum[23] ? {1'b0, for_ZLC3_fra_sum[22:1]} : for_ZLC3_fra_sum[22:0];
 wire [8:0] ZLC3_exp;
-assign ZLC3_exp = for_ZLC3_fra_sum[23] ? (exp_next - 8'd1) : (exp_next - 8'd2);
+assign ZLC3_exp = for_ZLC3_fra_sum[23] ? (exp_next_zero - 9'd1) : (exp_next_zero - 9'd2);
 
 wire [22:0] ZLC_lt3_fra;
 assign ZLC_lt3_fra = ans_shift_reg[22:0];
