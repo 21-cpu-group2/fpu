@@ -228,7 +228,7 @@ always @(posedge clk) begin
                 8'd24 : op_small <= fra2 >> 24;
                 8'd25 : op_small <= fra2 >> 25;
                 8'd26 : op_small <= fra2 >> 26;
-                default : op_small <= {27'd0, |fra2};
+                default : op_small <= 28'd0;
             endcase
         end else begin
             op_big <= fra2;
@@ -264,7 +264,7 @@ always @(posedge clk) begin
                 8'd24 : op_small <= fra1 >> 24;
                 8'd25 : op_small <= fra1 >> 25;
                 8'd26 : op_small <= fra1 >> 26;
-                default : op_small <= {27'd0, |fra1};
+                default : op_small <= 28'd0;
             endcase
         end
         ans_reg <= ans;
