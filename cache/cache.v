@@ -1,8 +1,12 @@
 //ddrとのやり取りは128bit=4wordで行うとする
 module cache#(
-    parameter tag_len = 13;
-    parameter index_len = 10;
-    parameter offset_len = 4;
+    parameter tag_len = 13,
+    parameter index_len = 10,
+    parameter offset_len = 4,
+    parameter tag_zero = 13'd0,
+    parameter index_zero = 10'd0,
+    parameter offset_zero = 4'd0,
+    parameter data_init = 128'd0//(32 * 2 ** (offset_len - 2))'d0
 )(
 	input wire clk,
 	input wire rstn,
@@ -41,7 +45,7 @@ localparam rd_s_hit = 4'd2;
 localparam rd_s_miss_ddrwait = 4'd3;
 localparam rd_s_miss_end = 4'd4;
 
-reg [3:0] wt_status;
+reg [3:0] wr_status;
 localparam wr_s_idle = 4'd0;
 localparam wr_s_compare = 4'd1;
 localparam wr_s_hit_ddrwait = 4'd2;
@@ -90,7 +94,7 @@ wire [index_len-1:0] cache_index;
 assign cache_index = (MA2cache_rd_en) ? MA2cache_rd_index :
                         (DDR2cache_rd_fin && cache_rd_index_flag) ? MA2cache_rd_index_3 :
                         (MA2cache_wr_en) ? MA2cache_wr_index :
-                        (DDR2cache_rd_fin && cache_wr_index_flag) ? MA2cache_wr_index_3 : (index_len)'d0;/////////////////////////////////////
+                        (DDR2cache_rd_fin && cache_wr_index_flag) ? MA2cache_wr_index_3 : index_zero;
 assign cache_rd_en = MA2cache_rd_en || MA2cache_wr_en;
 
 Status_Tag_ram Tag_ram1 (clk, cache_wr_en, cache_rd_en, rstn, cache_index,
@@ -98,9 +102,38 @@ Status_Tag_ram Tag_ram1 (clk, cache_wr_en, cache_rd_en, rstn, cache_index,
 
 Data_ram Data_ram1 (clk, cache_wr_en, cache_rd_en, rstn, cache_index, cache_wr_data, cache_rd_data);
 
-always (@posedge clk) begin
+always @(posedge clk) begin
     if (~rstn) begin
-
+	cache2MA_rd_fin = 1'b0;
+	cache2MA_rd_data = 32'd0;
+	cache2DDR_rd_addr = 27'd0;
+	cache2DDR_rd_en = 1'b0;
+	cache2MA_wr_fin = 1'b0;
+	cache2DDR_wr_addr  = 27'd0;
+	cache2DDR_wr_data = 128'd0;
+	cache2DDR_wr_en  = 1'b0;
+    rd_status = 4'd0;
+    wr_status = 4'd0;
+    MA2cache_rd_tag_2 = tag_zero;
+    MA2cache_rd_index_2 = index_zero;
+    MA2cache_rd_offset_2 = offset_zero;
+    MA2cache_rd_tag_3 = tag_zero;
+    MA2cache_rd_index_3 = index_zero;
+    MA2cache_rd_offset_3 = offset_zero;
+    MA2cache_wr_tag_2 = tag_zero;
+    MA2cache_wr_index_2 = index_zero;
+    MA2cache_wr_offset_2 = offset_zero;
+    MA2cache_wr_tag_3 = tag_zero;
+    MA2cache_wr_index_3 = index_zero;
+    MA2cache_wr_offset_3 = offset_zero;
+    MA2cache_wr_data_2 = 32'd0;
+    MA2cache_wr_data_3 = 32'd0;
+    cache_wr_en = 1'd0;
+    cache_wr_tag = tag_zero;
+    cache_wr_status = 3'd0;
+    cache_wr_data = data_init;
+    cache_rd_index_flag = 1'd0;
+    cache_wr_index_flag = 1'd0;
     end else if (MA2cache_rd_en) begin
         MA2cache_rd_tag_2 <= MA2cache_rd_tag;
         MA2cache_rd_index_2 <= MA2cache_rd_index;
@@ -123,7 +156,7 @@ always (@posedge clk) begin
             MA2cache_rd_tag_3 <= MA2cache_rd_tag_2;
             MA2cache_rd_index_3 <= MA2cache_rd_index_2;
             MA2cache_rd_offset_3 <= MA2cache_rd_offset_2;
-            cache_rd_index_flag <= 1'b1
+            cache_rd_index_flag <= 1'b1;
         end
     end else if (rd_status == rd_s_hit) begin
         cache2MA_rd_fin <= 1'b0;

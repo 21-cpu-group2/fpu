@@ -5,9 +5,10 @@
 //（この仕様はどちらも共通）
 //cachelineは128bit=4wordがデフォルト
 module Status_Tag_ram #(
-    parameter tag_len = 13;
-    parameter index_len = 10;
-    parameter offset_len = 4;
+    parameter tag_len = 13,
+    parameter index_len = 10,
+    parameter offset_len = 4,
+    parameter tag_3_zero = 16'd0
 )(
     input wire clk, we, re, reset, 
     input wire [index_len - 1:0] addr,
@@ -25,7 +26,7 @@ integer i;
 always @(posedge clk) begin
         if (~reset) begin
             for (i=0; i < 2**index_len; i = i + 1) begin
-                ram[i] = (tag_len + 3)'d0;//こんな書き方していいの？
+                ram[i] = tag_3_zero;
             end
         end
         if (we) begin
@@ -37,9 +38,10 @@ always @(posedge clk) begin
 endmodule
 
 module Data_ram #(
-    parameter tag_len = 13;
-    parameter index_len = 10;
-    parameter offset_len = 4;
+    parameter tag_len = 13,
+    parameter index_len = 10,
+    parameter offset_len = 4,
+    parameter data_init = 128'd0//(32 * 2 ** (offset_len - 2))'d0
 )(
     input wire clk, we, re, reset, 
     input wire [index_len - 1:0] addr,
@@ -52,7 +54,7 @@ integer i;
 always @(posedge clk) begin
         if (~reset) begin
             for (i=0;i < 2**index_len; i = i + 1) begin
-                ram[i] = (32 * 2 ** (offset_len - 2))'d0;
+                ram[i] = data_init;
             end
         end
         if (we) begin
