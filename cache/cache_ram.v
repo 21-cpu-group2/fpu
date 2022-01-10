@@ -28,6 +28,7 @@ always @(posedge clk) begin
             for (i=0; i < 2**index_len; i = i + 1) begin
                 ram[i] = tag_3_zero;
             end
+            status_tag_out <= tag_3_zero;
         end
         if (we) begin
             ram[addr] <= {status_in, tag_in};
@@ -56,6 +57,7 @@ always @(posedge clk) begin
             for (i=0;i < 2**index_len; i = i + 1) begin
                 ram[i] = data_init;
             end
+            Data_out <= data_init;
         end
         if (we) begin
             ram[addr] <= Data_in;
