@@ -1,0 +1,47 @@
+現段階のキャッシュはMAステージからDDR2に直接データを取りに行くものです。秋山君がもしキャッシュを作るならdesign_1.pdfのtop_v1_0とaxi_master_v1_0の間に作ることになります。以下をコピペして論理の部分を設計してください（ハードウェア実験スタイル）。バスの名前も長いですがこうしておかないと分かりにくくなるのでいじらないでください。
+
+module cache(
+	input wire clk,
+	input wire rstn,
+
+	//MAステージからキャッシュに読みたいデータを指定される
+	input wire [26:0] MA2cache_rd_addr,
+	input wire MA2cache_rd_en,
+	
+	//MAステージにキャッシュが要求されたデータを渡す
+	output reg cache2MA_rd_fin,
+	output reg [31:0] cache2MA_rd_data,
+
+	//キャッシュミスの場合はキャッシュがDDRに読みたいデータを指定してキャッシュに持ってくる
+	output reg [26:0] cache2DDR_rd_addr,
+	output reg cache2DDR_rd_en,
+
+	//DDRがキャッシュに要求されたデータを渡す
+	input wire DDR2cache_rd_fin,
+	input wire [31:0] DDR2cache_rd_data,
+	
+
+	//MAステージからキャッシュに書き込みたいデータを渡される
+	input wire [26:0] MA2cache_wr_addr,
+	input wire [31:0] MA2cache_wr_data,
+	input wire MA2cache_wr_en,
+
+	//キャッシュからMAステージに書き込むように渡されたデータはいつかDDRに書き込むこと＆そのデータをMAステージが読み込みたいときはその新しく渡されたデータを返すことを宣言
+	output reg cache2MA_wr_fin,
+
+	//適当なタイミングで書き込むべきデータをDDRに書き込む
+	output reg [26:0] cache2DDR_wr_addr,
+	output reg [31:0] cache2DDR_wr_data,
+	output reg cache2DDR_wr_en,
+
+	//DDRにデータが書き込まれたことを知らせる
+	input wire DDR2cache_wr_fin
+);
+endmodule
+
+注意＆要求
+1. rd_finやwr_finが立つ前にrd_enやwr_enを立てることはできません。
+2. rd_finやwr_finは1clockしか立たないのでしっかり見張っておく必要があります。
+3. rd_enやwr_enはrd_finやwr_finが立った後に1clockだけしか立ててはいけません。そうしないと予期しない動作になります。
+5. wr_enが立てられているときのwr_dataとwr_addr, rd_enが立てられているときのrd_addr, rd_finが立てられているときのrd_dataが有効なデータです。
+4. 読み込み要求がMAステージで為された時は、今までにMAステージが書き込んだデータのうち最新のものを必ず返してください。ここでミスるとデバッグが大変になります。
