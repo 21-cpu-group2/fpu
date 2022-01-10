@@ -123,8 +123,8 @@ wire [4:0] zero_count;
 wire [22:0] ans_shift;
 reg [23:0] ans_shift_reg;
 ZLC ZLC1(ans, zero_count, ans_shift);
-wire marume_up;
-assign marume_up = (~ans[27] && (ans[26] || ans[1]) && &ans[25:2]);
+// wire marume_up;
+// assign marume_up = (~ans[27] && (ans[26] || ans[1]) && &ans[25:2]);
 
 reg [7:0] exp_next;
 reg sig_next;
@@ -133,8 +133,8 @@ reg [4:0] zero_count_reg;
 wire [8:0] exp_next_zero;
 assign exp_next_zero = {1'b0, exp_next};
 
-wire [7:0] for_exp_next;
-assign for_exp_next = {7'd0, marume_up};
+// wire [7:0] for_exp_next;
+// assign for_exp_next = {7'd0, marume_up};
 
 wire [23:0] for_ZLC0_fra;
 assign for_ZLC0_fra = {23'd0, |ans_reg[3:0]};
@@ -228,7 +228,7 @@ always @(posedge clk) begin
                 8'd24 : op_small <= fra2 >> 24;
                 8'd25 : op_small <= fra2 >> 25;
                 8'd26 : op_small <= fra2 >> 26;
-                default : op_small <= {27'd0, |fra2};
+                default : op_small <= 28'd0;
             endcase
         end else begin
             op_big <= fra2;
@@ -264,12 +264,13 @@ always @(posedge clk) begin
                 8'd24 : op_small <= fra1 >> 24;
                 8'd25 : op_small <= fra1 >> 25;
                 8'd26 : op_small <= fra1 >> 26;
-                default : op_small <= {27'd0, |fra1};
+                default : op_small <= 28'd0;
             endcase
         end
         ans_reg <= ans;
         ans_shift_reg <= {1'b0, ans_shift};
-        exp_next <= (exp_big + for_exp_next);
+        // exp_next <= (exp_big + for_exp_next);
+        exp_next <= exp_big;
         sig_next <= sig_big;
         zero_count_reg <= zero_count;
         // if (ready) begin
