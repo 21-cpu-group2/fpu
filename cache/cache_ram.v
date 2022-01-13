@@ -23,11 +23,14 @@ reg [tag_len + 2:0] status_tag_out;
 assign {status_out, tag_out} = status_tag_out;
 integer i;
 
+initial begin
+    for (i=0; i < 2**index_len; i = i + 1) begin
+        ram[i] = tag_3_zero;
+    end
+end
+
 always @(posedge clk) begin
         if (~reset) begin
-            for (i=0; i < 2**index_len; i = i + 1) begin
-                ram[i] = tag_3_zero;
-            end
             status_tag_out <= tag_3_zero;
         end
         if (we) begin
@@ -52,11 +55,14 @@ module Data_ram #(
 reg [32 * 2 ** (offset_len - 2) - 1:0] ram [0:2**index_len-1];
 integer i;
 
+initial begin
+    for (i=0;i < 2**index_len; i = i + 1) begin
+        ram[i] = data_init;
+    end
+end
+
 always @(posedge clk) begin
         if (~reset) begin
-            for (i=0;i < 2**index_len; i = i + 1) begin
-                ram[i] = data_init;
-            end
             Data_out <= data_init;
         end
         if (we) begin
