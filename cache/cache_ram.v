@@ -25,13 +25,13 @@ reg [tag_len + 2:0] status_tag_out;
 assign {status_out, tag_out} = status_tag_out;
 wire [tag_len + 2:0] status_tag_in;
 assign status_tag_in = {status_in, tag_in};
-// integer i;
+integer i;
 
-// initial begin
-//     for (i=0; i < 2**index_len; i = i + 1) begin
-//         ram[i] = tag_3_zero;
-//     end
-// end
+initial begin
+    for (i=0; i < 2**index_len; i = i + 1) begin
+        ram[i] = tag_3_zero;
+    end
+end
 
 always @(posedge clk) begin
     if (~rstn) begin
@@ -59,13 +59,13 @@ module Data_ram #(
 );
 (* ram_style = "block" *)
 reg [32 * 2 ** (offset_len - 2) - 1:0] ram [0:2**index_len-1];
-// integer i;
+integer i;
 
-// initial begin
-//     for (i=0;i < 2**index_len; i = i + 1) begin
-//         ram[i] = data_init;
-//     end
-// end
+initial begin
+    for (i=0;i < 2**index_len; i = i + 1) begin
+        ram[i] = data_init;
+    end
+end
 
 always @(posedge clk) begin
     if (~rstn) begin
