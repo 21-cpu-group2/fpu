@@ -103,7 +103,8 @@ assign cache_rd_en = MA2cache_rd_en || MA2cache_wr_en;
 Status_Tag_ram Tag_ram1 (clk, cache_wr_en, cache_rd_en, rstn, cache_index,
                         cache_wr_tag, cache_wr_status, cache_rd_tag, cache_rd_status);
 
-Data_ram Data_ram1 (clk, cache_wr_en, cache_rd_en, rstn, cache_index, cache_wr_data, cache_rd_data);
+// Data_ram Data_ram1 (clk, cache_wr_en, cache_rd_en, rstn, cache_index, cache_wr_data, cache_rd_data);
+Data_ram Data_ram1 (clk, cache_wr_en, cache_index, cache_wr_data, cache_rd_data);
 
 always @(posedge clk) begin
     if (~rstn) begin

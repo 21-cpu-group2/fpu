@@ -52,25 +52,26 @@ module Data_ram #(
     parameter offset_len = 4,
     parameter data_init = 128'd0//(32 * 2 ** (offset_len - 2))'d0
 )(
-    input wire clk, we, re, rstn, 
+    input wire clk, we,
+    // input wire re, rstn, 
     input wire [index_len - 1:0] addr,
     input wire [32 * 2 ** (offset_len - 2) - 1:0] Data_in,
     output reg [32 * 2 ** (offset_len - 2) - 1:0] Data_out
 );
 (* ram_style = "block" *)
 reg [32 * 2 ** (offset_len - 2) - 1:0] ram [0:2**index_len-1];
-integer i;
+// integer i;
 
-initial begin
-    for (i=0;i < 2**index_len; i = i + 1) begin
-        ram[i] = data_init;
-    end
-end
+// initial begin
+//     for (i=0;i < 2**index_len; i = i + 1) begin
+//         ram[i] = data_init;
+//     end
+// end
 
 always @(posedge clk) begin
-    if (~rstn) begin
-        Data_out <= data_init;
-    end
+    // if (~rstn) begin
+    //     Data_out <= data_init;
+    // end
     if (we) begin
         ram[addr] <= Data_in;
     end
