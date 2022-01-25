@@ -8,44 +8,44 @@ module cache#(
     parameter offset_zero = 4'd0,
     parameter data_init = 128'd0//(32 * 2 ** (offset_len - 2))'d0
 )(
-	input wire clk,
+	(* mark_debug = "true" *) input wire clk,
 	input wire rstn,
 
 	//MAステージからキャッシュに読みたいデータを指定される
-	input wire [26:0] MA2cache_rd_addr,
-	input wire MA2cache_rd_en,
+	(* mark_debug = "true" *) input wire [26:0] MA2cache_rd_addr,
+	(* mark_debug = "true" *) input wire MA2cache_rd_en,
 	//MAステージにキャッシュが要求されたデータを渡す
-	output reg cache2MA_rd_fin,
-	output reg [31:0] cache2MA_rd_data,
+	(* mark_debug = "true" *) output reg cache2MA_rd_fin,
+	(* mark_debug = "true" *) output reg [31:0] cache2MA_rd_data,
 	//キャッシュミスの場合はキャッシュがDDRに読みたいデータを指定してキャッシュに持ってくる
-	output reg [26:0] cache2DDR_rd_addr,
-	output reg cache2DDR_rd_en,
+	(* mark_debug = "true" *) output reg [26:0] cache2DDR_rd_addr,
+	(* mark_debug = "true" *) output reg cache2DDR_rd_en,
 	//DDRがキャッシュに要求されたデータを渡す
-	input wire DDR2cache_rd_fin,
-	input wire [127:0] DDR2cache_rd_data,//[31:0] to [127:0]
+	(* mark_debug = "true" *) input wire DDR2cache_rd_fin,
+	(* mark_debug = "true" *) input wire [127:0] DDR2cache_rd_data,//[31:0] to [127:0]
 
 	//MAステージからキャッシュに書き込みたいデータを渡される
-	input wire [26:0] MA2cache_wr_addr,
-	input wire [31:0] MA2cache_wr_data,
-	input wire MA2cache_wr_en,
+	(* mark_debug = "true" *) input wire [26:0] MA2cache_wr_addr,
+	(* mark_debug = "true" *) input wire [31:0] MA2cache_wr_data,
+	(* mark_debug = "true" *) input wire MA2cache_wr_en,
 	//キャッシュからMAステージに書き込むように渡されたデータはいつかDDRに書き込むこと＆そのデータをMAステージが読み込みたいときはその新しく渡されたデータを返すことを宣言
-	output reg cache2MA_wr_fin,
+	(* mark_debug = "true" *) output reg cache2MA_wr_fin,
 	//適当なタイミングで書き込むべきデータをDDRに書き込む
-	output reg [26:0] cache2DDR_wr_addr,
-	output reg [127:0] cache2DDR_wr_data,//[31:0] to [127:0]
-	output reg cache2DDR_wr_en,
+	(* mark_debug = "true" *) output reg [26:0] cache2DDR_wr_addr,
+	(* mark_debug = "true" *) output reg [127:0] cache2DDR_wr_data,//[31:0] to [127:0]
+	(* mark_debug = "true" *) output reg cache2DDR_wr_en,
 	//DDRにデータが書き込まれたことを知らせる
-	input wire DDR2cache_wr_fin
+	(* mark_debug = "true" *) input wire DDR2cache_wr_fin
 );
 
-reg [3:0] rd_status;
+(* mark_debug = "true" *) reg [3:0] rd_status;
 localparam rd_s_idle = 4'd0;
 localparam rd_s_compare = 4'd1;
 localparam rd_s_hit = 4'd2;
 localparam rd_s_miss_ddrwait = 4'd3;
 localparam rd_s_miss_end = 4'd4;
 
-reg [3:0] wr_status;
+(* mark_debug = "true" *) reg [3:0] wr_status;
 localparam wr_s_idle = 4'd0;
 localparam wr_s_compare = 4'd1;
 localparam wr_s_hit_ddrwait = 4'd2;
@@ -166,6 +166,7 @@ always @(posedge clk) begin
         rd_status <= rd_s_idle;
         cache2MA_rd_data <= 32'd0;
     end else if (rd_status == rd_s_miss_ddrwait) begin
+        cache2DDR_rd_en <= 1'b0;
         if (DDR2cache_rd_fin) begin
             case (MA2cache_rd_offset_3[3:2])
                 2'b00 : cache2MA_rd_data <= DDR2cache_rd_data[31:0];

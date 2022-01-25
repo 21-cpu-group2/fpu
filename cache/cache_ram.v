@@ -8,9 +8,10 @@ module Status_Tag_ram #(
     parameter tag_len = 13,
     parameter index_len = 10,
     parameter offset_len = 4,
+    parameter ram_width = 16,
     parameter tag_3_zero = 16'd0
 )(
-    input wire clk, we, re, reset, 
+    input wire clk, we, re, rstn, 
     input wire [index_len - 1:0] addr,
     input wire [tag_len - 1:0] tag_in,
     input wire [2:0] status_in,
@@ -18,27 +19,31 @@ module Status_Tag_ram #(
     output wire [2:0] status_out
 );
 (* ram_style = "block" *)
-reg [tag_len + 2:0] ram [0:2**index_len-1];
+reg [ram_width-1:0] ram [0:2**index_len-1];
+
 reg [tag_len + 2:0] status_tag_out;
 assign {status_out, tag_out} = status_tag_out;
-integer i;
+wire [tag_len + 2:0] status_tag_in;
+assign status_tag_in = {status_in, tag_in};
+// integer i;
 
-initial begin
-    for (i=0; i < 2**index_len; i = i + 1) begin
-        ram[i] = tag_3_zero;
-    end
-end
+// initial begin
+//     for (i=0; i < 2**index_len; i = i + 1) begin
+//         ram[i] = tag_3_zero;
+//     end
+// end
 
 always @(posedge clk) begin
-        if (~reset) begin
-            status_tag_out <= tag_3_zero;
-        end
-        if (we) begin
-            ram[addr] <= {status_in, tag_in};
-        end else if (re) begin
-            status_tag_out <= ram[addr];
-        end
+    if (~rstn) begin
+        status_tag_out <= tag_3_zero;
     end
+    if (we) begin
+        ram[addr] <= status_tag_in;
+    end
+    begin
+        status_tag_out <= ram[addr];
+    end
+end
 endmodule
 
 module Data_ram #(
@@ -47,29 +52,31 @@ module Data_ram #(
     parameter offset_len = 4,
     parameter data_init = 128'd0//(32 * 2 ** (offset_len - 2))'d0
 )(
-    input wire clk, we, re, reset, 
+    input wire clk, we, re, rstn, 
     input wire [index_len - 1:0] addr,
     input wire [32 * 2 ** (offset_len - 2) - 1:0] Data_in,
     output reg [32 * 2 ** (offset_len - 2) - 1:0] Data_out
 );
+(* ram_style = "block" *)
 reg [32 * 2 ** (offset_len - 2) - 1:0] ram [0:2**index_len-1];
-integer i;
+// integer i;
 
-initial begin
-    for (i=0;i < 2**index_len; i = i + 1) begin
-        ram[i] = data_init;
-    end
-end
+// initial begin
+//     for (i=0;i < 2**index_len; i = i + 1) begin
+//         ram[i] = data_init;
+//     end
+// end
 
 always @(posedge clk) begin
-        if (~reset) begin
-            Data_out <= data_init;
-        end
-        if (we) begin
-            ram[addr] <= Data_in;
-        end else if (re) begin
-            Data_out <= ram[addr];
-        end
+    if (~rstn) begin
+        Data_out <= data_init;
     end
+    if (we) begin
+        ram[addr] <= Data_in;
+    end
+    begin
+        Data_out <= ram[addr];
+    end
+end
 endmodule
 `default_nettype wire
