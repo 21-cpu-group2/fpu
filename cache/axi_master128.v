@@ -84,10 +84,10 @@ module axi_master(
     //M_AXI_AWADDR, M_AXI_AWVALID <- M_AXI_AWREADY
     assign M_AXI_AWID = 1'b0;
     assign M_AXI_AWLEN = 8'b0;
-    assign M_AXI_AWSIZE = 3'b10;
+    assign M_AXI_AWSIZE = 3'b100;
     assign M_AXI_AWBURST = 2'b01;
     assign M_AXI_AWLOCK = 1'b0;
-    assign M_AXI_AWCACHE = 4'b0010;
+    assign M_AXI_AWCACHE = 4'b0011;
     assign M_AXI_AWPROT = 3'b0;
     assign M_AXI_AWQOS = 4'b0;
 
@@ -137,10 +137,10 @@ module axi_master(
     //M_AXI_ARADDR, M_AXI_ARVALID <- M_AXI_ARREADY
     assign M_AXI_ARID = 1'b0;   
     assign M_AXI_ARLEN = 8'b0;
-    assign M_AXI_ARSIZE = 3'b10;
+    assign M_AXI_ARSIZE = 3'b100;
     assign M_AXI_ARBURST = 2'b01;
     assign M_AXI_ARLOCK = 1'b0;
-    assign M_AXI_ARCACHE = 4'b0010;
+    assign M_AXI_ARCACHE = 4'b0011;
     assign M_AXI_ARPROT = 3'b0;
     assign M_AXI_ARQOS = 4'b0;
 

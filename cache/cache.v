@@ -100,11 +100,11 @@ assign cache_index = (MA2cache_rd_en) ? MA2cache_rd_index ://MA2からのreadの
                         cache_wr_miss_index_flag ? MA2cache_wr_index_3 : index_zero;//MA2からのwrite-missでddrからのdataと一緒に書くとき
 assign cache_rd_en = MA2cache_rd_en || MA2cache_wr_en;
 
-Status_Tag_ram Tag_ram1 (clk, cache_wr_en, cache_rd_en, rstn, cache_index,
+Status_Tag_ram Tag_ram1 (clk, cache_wr_en, cache_index,
                         cache_wr_tag, cache_wr_status, cache_rd_tag, cache_rd_status);
 
 // Data_ram Data_ram1 (clk, cache_wr_en, cache_rd_en, rstn, cache_index, cache_wr_data, cache_rd_data);
-Data_ram Data_ram1 (clk, cache_wr_en, cache_index, cache_wr_data, cache_rd_data);
+bram Data_ram1 (clk, cache_wr_en, cache_index, cache_wr_data, cache_rd_data);
 
 always @(posedge clk) begin
     if (~rstn) begin
