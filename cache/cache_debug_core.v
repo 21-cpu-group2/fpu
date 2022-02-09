@@ -19,6 +19,8 @@ module cache_debug_core (
 (* mark_debug = "true" *) reg wr_wait;
 (* mark_debug = "true" *) reg rd_wait;
 
+(* mark_debug = "true" *) reg [31:0] clk_counter;
+
 reg [12:0] core2cache_rd_addr_tag;
 reg [9:0] core2cache_rd_addr_index;
 reg [3:0] core2cache_rd_addr_offset;
@@ -49,7 +51,9 @@ always @(posedge clk) begin
         counter <= 10'd0;
         swich_flag <= 1'b0;
         end_flag <= 1'b0;
+        clk_counter <= 32'd0;
     end else if (swich) begin
+        clk_counter <= clk_counter + 32'd1;
         if (wr_wait) begin
             core2cache_wr_en <= 1'b0;
             core2cache_wr_data <= core2cache_wr_data;

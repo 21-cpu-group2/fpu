@@ -7,7 +7,7 @@
 module Status_Tag_ram #(
     parameter index_len = 10,
     parameter data_size = 16,// = tag(13) + 3
-    parameter tag_len = data_size - 3
+    parameter tag_len = 13
 )(
     input wire clk, we,
     input wire [index_len - 1:0] addr,
@@ -20,8 +20,9 @@ module Status_Tag_ram #(
 reg [data_size-1:0] ram [0:2**index_len-1];
 
 reg [tag_len + 2:0] status_tag_out;
-assign {status_out, tag_out} = status_tag_out;
-wire [tag_len + 2:0] status_tag_in;
+assign status_out = status_tag_out[tag_len+2:tag_len];
+assign tag_out = status_tag_out[tag_len-1:0];
+wire [data_size-1:0] status_tag_in;
 assign status_tag_in = {status_in, tag_in};
 
 always @(posedge clk) begin
