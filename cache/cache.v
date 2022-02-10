@@ -82,52 +82,66 @@ reg [offset_len-1:0] MA2cache_wr_offset_3;
 reg [31:0] MA2cache_wr_data_2;
 reg [31:0] MA2cache_wr_data_3;
 
-wire [tag_len-1:0] cache_rd_tag;
-wire [2:0] cache_rd_status;
-wire [data_len-1:0] cache_rd_data;
+wire [tag_len-1:0] cache_rd_tag_1;
+wire [tag_len-1:0] cache_rd_tag_2;
+wire [2:0] cache_rd_status_1;
+wire [2:0] cache_rd_status_2;
+wire [data_len-1:0] cache_rd_data_1;
+wire [data_len-1:0] cache_rd_data_2;
 
-wire [data_len-1:0] cache_rd_data_shift_rd_hit;
 wire [offset_len + 2:0] shift_rd_hit = {MA2cache_rd_offset_2, 2'b00};
-assign cache_rd_data_shift_rd_hit = (cache_rd_data >> shift_rd_hit);
+
+wire [data_len-1:0] cache_rd_data_shift_rd_hit_1;
+assign cache_rd_data_shift_rd_hit_1 = (cache_rd_data_1 >> shift_rd_hit);
+wire [data_len-1:0] cache_rd_data_shift_rd_hit_2;
+assign cache_rd_data_shift_rd_hit_2 = (cache_rd_data_2 >> shift_rd_hit);
 
 wire [data_len-1:0] cache_rd_data_shift_rd_miss;
 wire [offset_len + 2:0] shift_rd_miss = {MA2cache_rd_offset_3, 2'b00};
 assign cache_rd_data_shift_rd_miss = (DDR2cache_rd_data >> shift_rd_miss);
 
 wire [data_len-1:0] wr_data_hit = MA2cache_wr_data_2;//長さあってないけど0埋めしてくれるはず
-wire [data_len-1:0] wr_data_hit_mask = 32'hfffffffff;//同上
+wire [data_len-1:0] wr_data_hit_mask = 32'hffffffff;//同上
 wire [offset_len + 2:0] shift_wr_hit = {MA2cache_wr_offset_2, 2'b00};
 wire [data_len-1:0] wr_data_hit_shift = (wr_data_hit << shift_wr_hit);
 wire [data_len-1:0] wr_data_hit_mask_shift_not = ~(wr_data_hit_mask << shift_wr_hit);
 
 wire [data_len-1:0] wr_data_miss = MA2cache_wr_data_3;//長さあってないけど0埋めしてくれるはず
-wire [data_len-1:0] wr_data_miss_mask = 32'hfffffffff;//同上
-wire [offset_len + 2:0] shift_wr_miss = {MA2cache_wr_offset_2, 2'b00};
+wire [data_len-1:0] wr_data_miss_mask = 32'hffffffff;//同上
+wire [offset_len + 2:0] shift_wr_miss = {MA2cache_wr_offset_3, 2'b00};
 wire [data_len-1:0] wr_data_miss_shift = (wr_data_miss << shift_wr_miss);
 wire [data_len-1:0] wr_data_miss_mask_shift_not = ~(wr_data_miss_mask << shift_wr_miss);
 
-reg cache_wr_en;
-reg [tag_len-1:0] cache_wr_tag;
-reg [2:0] cache_wr_status;
+reg st_cache_wr_en_1;
+reg st_cache_wr_en_2;
+reg d_cache_wr_en_1;
+reg d_cache_wr_en_2;
+reg [tag_len-1:0] cache_wr_tag_1;
+reg [tag_len-1:0] cache_wr_tag_2;
+reg [2:0] cache_wr_status_1;
+reg [2:0] cache_wr_status_2;
 reg [data_len-1:0] cache_wr_data;
+
+reg [2:0] cache_num;
 
 reg cache_rd_index_flag;
 reg cache_wr_miss_index_flag;
 reg cache_wr_hit_index_flag;
-wire cache_rd_en;
 wire [index_len-1:0] cache_index;
 assign cache_index = (MA2cache_rd_en) ? MA2cache_rd_index ://MA2からのreadの際に直接読む時
-                        cache_rd_index_flag ? MA2cache_rd_index_3 ://MA2からのread-missでddrからのdataをwriteするとき
+                        cache_rd_index_flag ? MA2cache_rd_index_3 ://MA2からのread-missでddrからのdataをwriteするときor read-hitでstatusを書き換えるとき
                         (MA2cache_wr_en) ? MA2cache_wr_index ://MA2からのwriteの際に直接読む時
                         cache_wr_hit_index_flag ? MA2cache_wr_index_3 ://MA2からのwrite-hitでcacheのdataと一緒に書くとき
                         cache_wr_miss_index_flag ? MA2cache_wr_index_3 : index_zero;//MA2からのwrite-missでddrからのdataと一緒に書くとき
-assign cache_rd_en = MA2cache_rd_en || MA2cache_wr_en;
 
-Status_Tag_ram #(.index_len(index_len), .tag_len(tag_len)) Tag_ram1 (clk, cache_wr_en, cache_index,
-                        cache_wr_tag, cache_wr_status, cache_rd_tag, cache_rd_status);
+Status_Tag_ram #(.index_len(index_len), .tag_len(tag_len)) Tag_ram1 (clk, st_cache_wr_en_1, cache_index,
+                        cache_wr_tag_1, cache_wr_status_1, cache_rd_tag_1, cache_rd_status_1);
+Status_Tag_ram #(.index_len(index_len), .tag_len(tag_len)) Tag_ram2 (clk, st_cache_wr_en_2, cache_index,
+                        cache_wr_tag_2, cache_wr_status_2, cache_rd_tag_2, cache_rd_status_2);
 
 // Data_ram Data_ram1 (clk, cache_wr_en, cache_rd_en, rstn, cache_index, cache_wr_data, cache_rd_data);
-bram #(.index_len(index_len), .data_size(data_len)) Data_ram1 (clk, cache_wr_en, cache_index, cache_wr_data, cache_rd_data);
+Data_ram #(.index_len(index_len), .data_size(data_len)) Data_ram1 (clk, d_cache_wr_en_1, cache_index, cache_wr_data_1, cache_rd_data_1);
+Data_ram #(.index_len(index_len), .data_size(data_len)) Data_ram2 (clk, d_cache_wr_en_2, cache_index, cache_wr_data_2, cache_rd_data_2);
 
 always @(posedge clk) begin
     if (~rstn) begin
@@ -155,29 +169,57 @@ always @(posedge clk) begin
         MA2cache_wr_offset_3 <= offset_zero;
         MA2cache_wr_data_2 <= 32'd0;
         MA2cache_wr_data_3 <= 32'd0;
-        cache_wr_en <= 1'd0;
-        cache_wr_tag <= tag_zero;
-        cache_wr_status <= 3'd0;
+        st_cache_wr_en_1 <= 1'd0;
+        st_cache_wr_en_2 <= 1'd0;
+        d_cache_wr_en_1 <= 1'd0;
+        d_cache_wr_en_2 <= 1'd0;
+        cache_wr_tag_1 <= tag_zero;
+        cache_wr_tag_2 <= tag_zero;
+        cache_wr_status_1 <= 3'd0;
+        cache_wr_status_2 <= 3'd0;
         cache_wr_data <= data_init;
         cache_rd_index_flag <= 1'd0;
         cache_wr_miss_index_flag <= 1'd0;
         cache_wr_hit_index_flag <= 1'd0;
+        cache_num <= 3'b0;
     end else if (MA2cache_rd_en) begin
         MA2cache_rd_tag_2 <= MA2cache_rd_tag;
         MA2cache_rd_index_2 <= MA2cache_rd_index;
         MA2cache_rd_offset_2 <= MA2cache_rd_offset;
         rd_status <= rd_s_compare;
     end else if (rd_status == rd_s_compare) begin
-        if ((MA2cache_rd_tag_2 == cache_rd_tag) && cache_rd_status[0]) begin
+        if (cache_rd_status_1[1] && cache_rd_status_2[1]) begin
+            st_cache_wr_en_1 <= 1'b1;
+            cache_wr_tag_1 <= cache_rd_tag_1;
+            cache_wr_status_1 <= {2'b00, cache_rd_status_1[0]};
+            st_cache_wr_en_2 <= 1'b1;
+            cache_wr_tag_2 <= cache_rd_tag_2;
+            cache_wr_status_2 <= {2'b00, cache_rd_status_2[0]};
+            MA2cache_rd_index_3 <= MA2cache_rd_index_2;
+            cache_rd_index_flag <= 1'b1;
+        end
+        if ((MA2cache_rd_tag_2 == cache_rd_tag_1) && cache_rd_status_1[0]) begin
             rd_status <= rd_s_hit;
             cache2MA_rd_fin <= 1'b1;
-            cache2MA_rd_data <= cache_rd_data_shift_rd_hit[31:0];
-            // case (MA2cache_rd_offset_2[3:2])
-            //     2'b00 : cache2MA_rd_data <= cache_rd_data[31:0];
-            //     2'b01 : cache2MA_rd_data <= cache_rd_data[63:32];
-            //     2'b10 : cache2MA_rd_data <= cache_rd_data[95:64];
-            //     2'b11 : cache2MA_rd_data <= cache_rd_data[127:96];
-            // endcase
+            cache2MA_rd_data <= cache_rd_data_shift_rd_hit_1[31:0];
+            if (cache_rd_status_1[1] == 1'b0) begin
+                st_cache_wr_en_1 <= 1'b1;
+                cache_wr_tag_1 <= cache_rd_tag_1;
+                cache_wr_status_1 <= 3'b011;
+                MA2cache_rd_index_3 <= MA2cache_rd_index_2;
+                cache_rd_index_flag <= 1'b1;
+            end
+        end else if ((MA2cache_rd_tag_2 == cache_rd_tag_2) && cache_rd_status_2[0]) begin
+            rd_status <= rd_s_hit;
+            cache2MA_rd_fin <= 1'b1;
+            cache2MA_rd_data <= cache_rd_data_shift_rd_hit_2[31:0];
+            if (cache_rd_status_2[1] == 1'b0) begin
+                st_cache_wr_en_2 <= 1'b1;
+                cache_wr_tag_2 <= cache_rd_tag_2;
+                cache_wr_status_2 <= 3'b011;
+                MA2cache_rd_index_3 <= MA2cache_rd_index_2;
+                cache_rd_index_flag <= 1'b1;
+            end
         end else begin
             rd_status <= rd_s_miss_ddrwait;
             cache2DDR_rd_en <= 1'b1;
@@ -185,29 +227,47 @@ always @(posedge clk) begin
             MA2cache_rd_tag_3 <= MA2cache_rd_tag_2;
             MA2cache_rd_index_3 <= MA2cache_rd_index_2;
             MA2cache_rd_offset_3 <= MA2cache_rd_offset_2;
+            if (cache_rd_status_1[1] == 1'b0) begin
+                cache_num = 3'd1;
+            end else begin
+                cache_num = 3'd2;
+            end
         end
     end else if (rd_status == rd_s_hit) begin
         cache2MA_rd_fin <= 1'b0;
         rd_status <= rd_s_idle;
         cache2MA_rd_data <= 32'd0;
+        cache_rd_index_flag <= 1'b0;
+        st_cache_wr_en_1 <= 1'b0;
+        st_cache_wr_en_2 <= 1'b0;
     end else if (rd_status == rd_s_miss_ddrwait) begin
+        if (cache_rd_index_flag) cache_rd_index_flag <= 1'b0;
         cache2DDR_rd_en <= 1'b0;
+        st_cache_wr_en_1 <= 1'b0;
+        st_cache_wr_en_2 <= 1'b0;
+        cache_num <= cache_num;
         if (DDR2cache_rd_fin) begin
             cache2MA_rd_data <= cache_rd_data_shift_rd_miss[31:0];
-            // case (MA2cache_rd_offset_3[3:2])
-            //     2'b00 : cache2MA_rd_data <= DDR2cache_rd_data[31:0];
-            //     2'b01 : cache2MA_rd_data <= DDR2cache_rd_data[63:32];
-            //     2'b10 : cache2MA_rd_data <= DDR2cache_rd_data[95:64];
-            //     2'b11 : cache2MA_rd_data <= DDR2cache_rd_data[127:96];
-            // endcase
             cache2MA_rd_fin <= 1'b1;
-            cache_wr_en <= 1'b1;
-            cache_wr_data <= DDR2cache_rd_data;//offset_lenを変えても変える必要なし
-            cache_wr_tag <= MA2cache_rd_tag_3;
-            cache_wr_status <= 3'b001;
             rd_status <= rd_s_miss_end;
             cache_rd_index_flag <= 1'b1;
             MA2cache_rd_index_3 <= MA2cache_rd_index_3;
+            case (cache_num)
+                3'b1 : begin
+                    d_cache_wr_en_1 <= 1'b1;
+                    st_cache_wr_en_1 <= 1'b1;
+                    cache_wr_data_1 <= DDR2cache_rd_data;//offset_lenを変えても変える必要なし
+                    cache_wr_tag_1 <= MA2cache_rd_tag_3;
+                    cache_wr_status_1 <= 3'b001;
+                end
+                default : begin
+                    d_cache_wr_en_2 <= 1'b1;
+                    st_cache_wr_en_2 <= 1'b1;
+                    cache_wr_data_2 <= DDR2cache_rd_data;//offset_lenを変えても変える必要なし
+                    cache_wr_tag_2 <= MA2cache_rd_tag_3;
+                    cache_wr_status_2 <= 3'b001;
+                end
+            endcase
         end else begin
             rd_status <= rd_s_miss_ddrwait;
             MA2cache_rd_tag_3 <= MA2cache_rd_tag_3;
@@ -217,11 +277,16 @@ always @(posedge clk) begin
     end else if (rd_status == rd_s_miss_end) begin
         cache2MA_rd_fin <= 1'b0;
         cache2MA_rd_data <= 32'd0;
-        cache_wr_en <= 1'b0;
+        d_cache_wr_en_1 <= 1'b0;
+        d_cache_wr_en_2 <= 1'b0;
+        st_cache_wr_en_1 <= 1'b0;
+        st_cache_wr_en_2 <= 1'b0;
         rd_status <= rd_s_idle;
         cache_wr_data <= data_init;
-        cache_wr_tag <= tag_zero;
-        cache_wr_status <= 3'b000;
+        cache_wr_tag_1 <= tag_zero;
+        cache_wr_tag_2 <= tag_zero;
+        cache_wr_status_1 <= 3'b000;
+        cache_wr_status_2 <= 3'b000;
         cache_rd_index_flag <= 1'b0;
         MA2cache_rd_index_3 <= index_zero;
     end else if (MA2cache_wr_en) begin///////////////////////////ここから書き込み
@@ -231,31 +296,27 @@ always @(posedge clk) begin
         MA2cache_wr_data_2 <= MA2cache_wr_data;
         wr_status <= wr_s_compare;
     end else if (wr_status == wr_s_compare) begin
-        if ((MA2cache_wr_tag_2 == cache_rd_tag) && cache_rd_status[0]) begin
+        if ((MA2cache_wr_tag_2 == cache_rd_tag_1) && cache_rd_status_1[0]) begin
             //hit (not new)
-            cache_wr_en <= 1'b1;
-            cache_wr_tag <= MA2cache_wr_tag_2;
-            cache_wr_data <= (cache_rd_data & wr_data_hit_mask_shift_not) | wr_data_hit_shift;
-            cache2DDR_wr_data <= (cache_rd_data & wr_data_hit_mask_shift_not) | wr_data_hit_shift;
-            // case (MA2cache_wr_offset_2[3:2])
-            //     2'b00 : begin
-            //         cache_wr_data <= {cache_rd_data[127:32], MA2cache_wr_data_2};
-            //         cache2DDR_wr_data <= {cache_rd_data[127:32], MA2cache_wr_data_2};
-            //     end 
-            //     2'b01 : begin
-            //         cache_wr_data <= {cache_rd_data[127:64], MA2cache_wr_data_2, cache_rd_data[31:0]};
-            //         cache2DDR_wr_data <= {cache_rd_data[127:64], MA2cache_wr_data_2, cache_rd_data[31:0]};
-            //     end
-            //     2'b10 : begin
-            //         cache_wr_data <= {cache_rd_data[127:96], MA2cache_wr_data_2, cache_rd_data[63:0]};
-            //         cache2DDR_wr_data <= {cache_rd_data[127:96], MA2cache_wr_data_2, cache_rd_data[63:0]};
-            //     end
-            //     2'b11 : begin
-            //         cache_wr_data <= {MA2cache_wr_data_2, cache_rd_data[95:0]};
-            //         cache2DDR_wr_data <= {MA2cache_wr_data_2, cache_rd_data[95:0]};
-            //     end
-            // endcase
-            cache_wr_status <= 3'b001;
+            st_cache_wr_en_1 <= 1'b1;
+            d_cache_wr_en_1 <= 1'b1;
+            cache_wr_tag_1 <= MA2cache_wr_tag_2;
+            cache_wr_data_1 <= (cache_rd_data_1 & wr_data_hit_mask_shift_not) | wr_data_hit_shift;
+            cache2DDR_wr_data <= (cache_rd_data_1 & wr_data_hit_mask_shift_not) | wr_data_hit_shift;
+            cache_wr_status_1 <= 3'b001;
+            wr_status <= wr_s_hit_ddrwait;
+            cache2DDR_wr_en <= 1'b1;
+            cache2DDR_wr_addr <= {MA2cache_wr_tag_2, MA2cache_wr_index_2, MA2cache_wr_offset_2};//offset不要かも？
+            cache_wr_hit_index_flag <= 1'd1;
+            MA2cache_wr_index_3 <= MA2cache_wr_index_2;
+        end else if ((MA2cache_wr_tag_2 == cache_rd_tag_2) && cache_rd_status_2[0]) begin
+            //hit (not new)
+            st_cache_wr_en_2 <= 1'b1;
+            d_cache_wr_en_2 <= 1'b1;
+            cache_wr_tag_2 <= MA2cache_wr_tag_2;
+            cache_wr_data_2 <= (cache_rd_data_2 & wr_data_hit_mask_shift_not) | wr_data_hit_shift;
+            cache2DDR_wr_data <= (cache_rd_data_2 & wr_data_hit_mask_shift_not) | wr_data_hit_shift;
+            cache_wr_status_2 <= 3'b001;
             wr_status <= wr_s_hit_ddrwait;
             cache2DDR_wr_en <= 1'b1;
             cache2DDR_wr_addr <= {MA2cache_wr_tag_2, MA2cache_wr_index_2, MA2cache_wr_offset_2};//offset不要かも？
@@ -270,9 +331,17 @@ always @(posedge clk) begin
             MA2cache_wr_tag_3 <= MA2cache_wr_tag_2;
             MA2cache_wr_index_3 <= MA2cache_wr_index_2;
             MA2cache_wr_offset_3 <= MA2cache_wr_offset_2;
+            if (cache_rd_status_1[1] == 1'b0) begin
+                cache_num = 3'd1;
+            end else begin
+                cache_num = 3'd2;
+            end
         end
     end else if (wr_status == wr_s_hit_ddrwait) begin
-        cache_wr_en <= 1'b0;
+        st_cache_wr_en_1 <= 1'b0;
+        st_cache_wr_en_2 <= 1'b0;
+        d_cache_wr_en_1 <= 1'b0;
+        d_cache_wr_en_2 <= 1'b0;
         cache2DDR_wr_en <= 1'b0;
         cache_wr_data <= data_init;
         cache2DDR_wr_data <= data_init;
@@ -280,7 +349,8 @@ always @(posedge clk) begin
         cache2DDR_wr_addr <= 27'd0;
         cache_wr_hit_index_flag <= 1'd0;
         MA2cache_wr_index_3 <= index_zero;
-        cache_wr_tag <= tag_zero;
+        cache_wr_tag_1 <= tag_zero;
+        cache_wr_tag_2 <= tag_zero;
         if (DDR2cache_wr_fin) begin
             wr_status <= wr_s_hit_end;
             cache2MA_wr_fin <= 1'b1;
@@ -296,39 +366,37 @@ always @(posedge clk) begin
         MA2cache_wr_tag_3 <= MA2cache_wr_tag_3;
         MA2cache_wr_index_3 <= MA2cache_wr_index_3;
         MA2cache_wr_offset_3 <= MA2cache_wr_offset_3;
+        cache_num <= cache_num;
         if (DDR2cache_rd_fin) begin
             wr_status <= wr_s_miss_ddr_wr_wait;
-            cache_wr_en <= 1'b1;
-            cache_wr_tag <= MA2cache_wr_tag_3;
-            cache_wr_status <= 3'b001;
-            cache_wr_data <= (cache_rd_data & wr_data_hit_mask_shift_not) | wr_data_hit_shift;
-            cache2DDR_wr_data <= (cache_rd_data & wr_data_hit_mask_shift_not) | wr_data_hit_shift;
-            // case (MA2cache_wr_offset_2[3:2])
-            //     2'b00 : begin
-            //         cache_wr_data <= {DDR2cache_rd_data[127:32], MA2cache_wr_data_3};
-            //         cache2DDR_wr_data <= {DDR2cache_rd_data[127:32], MA2cache_wr_data_3};
-            //     end 
-            //     2'b01 : begin
-            //         cache_wr_data <= {DDR2cache_rd_data[127:64], MA2cache_wr_data_3, DDR2cache_rd_data[31:0]};
-            //         cache2DDR_wr_data <= {DDR2cache_rd_data[127:64], MA2cache_wr_data_3, DDR2cache_rd_data[31:0]};
-            //     end
-            //     2'b10 : begin
-            //         cache_wr_data <= {DDR2cache_rd_data[127:96], MA2cache_wr_data_3, DDR2cache_rd_data[63:0]};
-            //         cache2DDR_wr_data <= {DDR2cache_rd_data[127:96], MA2cache_wr_data_3, DDR2cache_rd_data[63:0]};
-            //     end
-            //     2'b11 : begin
-            //         cache_wr_data <= {MA2cache_wr_data_3, DDR2cache_rd_data[95:0]};
-            //         cache2DDR_wr_data <= {MA2cache_wr_data_3, DDR2cache_rd_data[95:0]};
-            //     end
-            // endcase
+            cache2DDR_wr_data <= (DDR2cache_rd_data & wr_data_miss_mask_shift_not) | wr_data_miss_shift;
             cache2DDR_wr_en <= 1'b1;
             cache2DDR_wr_addr <= {MA2cache_wr_tag_3, MA2cache_wr_index_3, MA2cache_wr_offset_3};//offset不要かも？
             cache_wr_miss_index_flag <= 1'b1;
+            case (cache_num)
+                3'd1 : begin
+                    st_cache_wr_en_1 <= 1'b1;
+                    d_cache_wr_en_1 <= 1'b1;
+                    cache_wr_tag_1 <= MA2cache_wr_tag_3;
+                    cache_wr_status_1 <= 3'b001;
+                    cache_wr_data_1 <= (DDR2cache_rd_data & wr_data_miss_mask_shift_not) | wr_data_miss_shift;
+                end
+                default : begin
+                    st_cache_wr_en_2 <= 1'b1;
+                    d_cache_wr_en_2 <= 1'b1;
+                    cache_wr_tag_2 <= MA2cache_wr_tag_3;
+                    cache_wr_status_2 <= 3'b001;
+                    cache_wr_data_2 <= (DDR2cache_rd_data & wr_data_miss_mask_shift_not) | wr_data_miss_shift;
+                end
+            endcase
         end else begin
             wr_status <= wr_s_miss_ddrwait;
         end
     end else if (wr_status == wr_s_miss_ddr_wr_wait) begin
-        cache_wr_en <= 1'b0;
+        st_cache_wr_en_1 <= 1'b0;
+        st_cache_wr_en_2 <= 1'b0;
+        d_cache_wr_en_1 <= 1'b0;
+        d_cache_wr_en_2 <= 1'b0;
         cache_wr_miss_index_flag <= 1'b0;
         cache2DDR_wr_en <= 1'b0;
         cache_wr_data <= data_init;

@@ -167,7 +167,7 @@ always @(posedge clk) begin
         // end
         end else if (counter < 10'd100) begin
             counter <= counter + 10'd1;
-            core2cache_wr_addr_tag <= core2cache_wr_addr_tag + 13'b0001000000000;
+            core2cache_wr_addr_tag <= core2cache_wr_addr_tag + 13'b0000100000000;
             core2cache_wr_addr_index <= core2cache_wr_addr_index + 10'b0101000000;
             core2cache_wr_addr_offset <= core2cache_wr_addr_offset + 4'b1100;
             core2cache_wr_en <= 1'b1;
@@ -175,7 +175,7 @@ always @(posedge clk) begin
             wr_wait <= 1'b1;
         end else if (counter < 10'd200) begin
             counter <= counter + 10'd1;
-            core2cache_rd_addr_tag <= core2cache_rd_addr_tag + 13'b0001000000000;
+            core2cache_rd_addr_tag <= core2cache_rd_addr_tag + 13'b0000100000000;
             core2cache_rd_addr_index <= core2cache_rd_addr_index + 10'b0101000000;
             core2cache_rd_addr_offset <= core2cache_rd_addr_offset + 4'b1100;
             core2cache_rd_en <= 1'b1;
@@ -183,14 +183,14 @@ always @(posedge clk) begin
         end else if (counter < 10'd400) begin
             counter <= counter + 10'd1;
             if (counter[0]) begin
-                core2cache_wr_addr_tag <= core2cache_wr_addr_tag + 13'b0001000000000;
+                core2cache_wr_addr_tag <= core2cache_wr_addr_tag + 13'b0000100000000;
                 core2cache_wr_addr_index <= core2cache_wr_addr_index + 10'b01010000000;
                 core2cache_wr_addr_offset <= core2cache_wr_addr_offset + 4'b1100;
                 core2cache_wr_en <= 1'b1;
                 core2cache_wr_data <= core2cache_wr_data + 32'd1;
                 wr_wait <= 1'b1;
             end else begin
-                core2cache_rd_addr_tag <= core2cache_rd_addr_tag + 13'b0001000000000;
+                core2cache_rd_addr_tag <= core2cache_rd_addr_tag + 13'b0000100000000;
                 core2cache_rd_addr_index <= core2cache_rd_addr_index + 10'b0101000000;
                 core2cache_rd_addr_offset <= core2cache_rd_addr_offset + 4'b1100;
                 core2cache_rd_en <= 1'b1;
