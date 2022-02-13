@@ -196,7 +196,7 @@ always @(posedge clk) begin
         //         core2cache_rd_en <= 1'b1;
         //         rd_wait <= 1'b1;
         //     end
-        end else if (counter < 10'd100) begin
+        end else if (counter < 10'd104) begin
             counter <= counter + 10'd1;
             if (counter[2:0] == 3'b000) core2cache_wr_addr_tag <= core2cache_wr_addr_tag + 13'b0100000000000;
             else core2cache_wr_addr_tag <= core2cache_wr_addr_tag + 13'b0010000000000;
@@ -206,16 +206,16 @@ always @(posedge clk) begin
             core2cache_wr_en <= 1'b1;
             core2cache_wr_data <= core2cache_wr_data + 32'd1;
             wr_wait <= 1'b1;
-        end else if (counter < 10'd200) begin
+        end else if (counter < 10'd208) begin
             counter <= counter + 10'd1;
-            if (counter[2:0] == 3'b000) core2cache_wr_addr_tag <= core2cache_wr_addr_tag + 13'b0100000000000;
-            else core2cache_wr_addr_tag <= core2cache_wr_addr_tag + 13'b0010000000000;
+            if (counter[2:0] == 3'b000) core2cache_rd_addr_tag <= core2cache_rd_addr_tag + 13'b0100000000000;
+            else core2cache_rd_addr_tag <= core2cache_rd_addr_tag + 13'b0010000000000;
             core2cache_rd_addr_index <= core2cache_rd_addr_index + 10'b0010000000;
-            if (counter[2:0] == 3'b000) core2cache_wr_addr_offset <= core2cache_wr_addr_offset + 4'b1000;
-            else core2cache_wr_addr_offset <= core2cache_wr_addr_offset + 4'b0100;
+            if (counter[2:0] == 3'b000) core2cache_rd_addr_offset <= core2cache_rd_addr_offset + 4'b1000;
+            else core2cache_rd_addr_offset <= core2cache_rd_addr_offset + 4'b0100;
             core2cache_rd_en <= 1'b1;
             rd_wait <= 1'b1;
-        end else if (counter < 10'd400) begin
+        end else if (counter < 10'd416) begin
             counter <= counter + 10'd1;
             if (counter[0]) begin
                 if (counter[3:1] == 3'b000) core2cache_wr_addr_tag <= core2cache_wr_addr_tag + 13'b0100000000000;
@@ -227,11 +227,11 @@ always @(posedge clk) begin
                 core2cache_wr_data <= core2cache_wr_data + 32'd1;
                 wr_wait <= 1'b1;
             end else begin
-                if (counter[3:1] == 3'b000) core2cache_wr_addr_tag <= core2cache_wr_addr_tag + 13'b0100000000000;
-                else core2cache_wr_addr_tag <= core2cache_wr_addr_tag + 13'b0010000000000;
+                if (counter[3:1] == 3'b000) core2cache_rd_addr_tag <= core2cache_rd_addr_tag + 13'b0100000000000;
+                else core2cache_rd_addr_tag <= core2cache_rd_addr_tag + 13'b0010000000000;
                 core2cache_rd_addr_index <= core2cache_rd_addr_index + 10'b0010000000;
-                if (counter[3:1] == 3'b000) core2cache_wr_addr_offset <= core2cache_wr_addr_offset + 4'b1000;
-                else core2cache_wr_addr_offset <= core2cache_wr_addr_offset + 4'b0100;
+                if (counter[3:1] == 3'b000) core2cache_rd_addr_offset <= core2cache_rd_addr_offset + 4'b1000;
+                else core2cache_rd_addr_offset <= core2cache_rd_addr_offset + 4'b0100;
                 core2cache_rd_en <= 1'b1;
                 rd_wait <= 1'b1;
             end
