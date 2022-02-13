@@ -11,7 +11,7 @@ module cache#(
     parameter offset_zero = 4'd0,
     parameter data_init = 128'd0//(32 * 2 ** (offset_len - 2))'d0
 )(
-	(* mark_debug = "true" *) input wire clk,
+	input wire clk,
 	input wire rstn,
 
 	//MAステージからキャッシュに読みたいデータを指定される
@@ -82,12 +82,18 @@ reg [offset_len-1:0] MA2cache_wr_offset_3;
 reg [31:0] MA2cache_wr_data_2;
 reg [31:0] MA2cache_wr_data_3;
 
-wire [tag_len-1:0] cache_rd_tag_1;
-wire [tag_len-1:0] cache_rd_tag_2;
+// wire [tag_len-1:0] cache_rd_tag_1;
+// wire [tag_len-1:0] cache_rd_tag_2;
 wire [2:0] cache_rd_status_1;
 wire [2:0] cache_rd_status_2;
 wire [data_len-1:0] cache_rd_data_1;
 wire [data_len-1:0] cache_rd_data_2;
+(* mark_debug = "true" *)wire [tag_len-1:0] cache_rd_tag_1;
+(* mark_debug = "true" *)wire [tag_len-1:0] cache_rd_tag_2;
+// (* mark_debug = "true" *)wire [2:0] cache_rd_status_1;
+// (* mark_debug = "true" *)wire [2:0] cache_rd_status_2;
+// (* mark_debug = "true" *)wire [data_len-1:0] cache_rd_data_1;
+// (* mark_debug = "true" *)wire [data_len-1:0] cache_rd_data_2;
 
 wire [offset_len + 1:0] shift_rd_hit = {MA2cache_rd_offset_2, 2'b00};
 
@@ -230,9 +236,9 @@ always @(posedge clk) begin
             MA2cache_rd_index_3 <= MA2cache_rd_index_2;
             MA2cache_rd_offset_3 <= MA2cache_rd_offset_2;
             if (cache_rd_status_1[1] == 1'b0) begin
-                cache_num = 3'd1;
+                cache_num <= 3'd1;
             end else begin
-                cache_num = 3'd2;
+                cache_num <= 3'd2;
             end
         end
     end else if (rd_status == rd_s_hit) begin
@@ -334,10 +340,14 @@ always @(posedge clk) begin
             MA2cache_wr_tag_3 <= MA2cache_wr_tag_2;
             MA2cache_wr_index_3 <= MA2cache_wr_index_2;
             MA2cache_wr_offset_3 <= MA2cache_wr_offset_2;
-            if (cache_rd_status_1[1] == 1'b0) begin
-                cache_num = 3'd1;
+            if (cache_rd_status_1[0] == 1'b0) begin
+                cache_num <= 3'd1;
+            end else if (cache_rd_status_2[0] == 1'b0) begin
+                cache_num <= 3'd2;
+            end else if (cache_rd_status_1[1] == 1'b0) begin
+                cache_num <= 3'd1;
             end else begin
-                cache_num = 3'd2;
+                cache_num <= 3'd2;
             end
         end
     end else if (wr_status == wr_s_hit_ddrwait) begin
