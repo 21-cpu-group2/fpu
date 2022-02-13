@@ -173,8 +173,8 @@ Status_Tag_ram #(.index_len(index_len), .tag_len(tag_len)) Tag_ram4 (clk, st_cac
 // Data_ram Data_ram1 (clk, cache_wr_en, cache_rd_en, rstn, cache_index, cache_wr_data, cache_rd_data);
 Data_ram #(.index_len(index_len), .data_size(data_len)) Data_ram1 (clk, d_cache_wr_en_1, cache_index, cache_wr_data_1, cache_rd_data_1);
 Data_ram #(.index_len(index_len), .data_size(data_len)) Data_ram2 (clk, d_cache_wr_en_2, cache_index, cache_wr_data_2, cache_rd_data_2);
-Data_ram #(.index_len(index_len), .data_size(data_len)) Data_ram1 (clk, d_cache_wr_en_3, cache_index, cache_wr_data_3, cache_rd_data_3);
-Data_ram #(.index_len(index_len), .data_size(data_len)) Data_ram2 (clk, d_cache_wr_en_4, cache_index, cache_wr_data_4, cache_rd_data_4);
+Data_ram #(.index_len(index_len), .data_size(data_len)) Data_ram3 (clk, d_cache_wr_en_3, cache_index, cache_wr_data_3, cache_rd_data_3);
+Data_ram #(.index_len(index_len), .data_size(data_len)) Data_ram4 (clk, d_cache_wr_en_4, cache_index, cache_wr_data_4, cache_rd_data_4);
 
 always @(posedge clk) begin
     if (~rstn) begin
@@ -342,14 +342,14 @@ always @(posedge clk) begin
                     cache_wr_tag_1 <= MA2cache_rd_tag_3;
                     cache_wr_status_1 <= 3'b001;
                 end
-                3'b2 : begin
+                3'd2 : begin
                     d_cache_wr_en_2 <= 1'b1;
                     st_cache_wr_en_2 <= 1'b1;
                     cache_wr_data_2 <= DDR2cache_rd_data;//offset_lenを変えても変える必要なし
                     cache_wr_tag_2 <= MA2cache_rd_tag_3;
                     cache_wr_status_2 <= 3'b001;
                 end
-                3'b3 : begin
+                3'd3 : begin
                     d_cache_wr_en_3 <= 1'b1;
                     st_cache_wr_en_3 <= 1'b1;
                     cache_wr_data_3 <= DDR2cache_rd_data;//offset_lenを変えても変える必要なし
